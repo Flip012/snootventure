@@ -68,8 +68,19 @@
       #tc-jump {
         right: max(16px, env(safe-area-inset-right));
       }
+      /* Ebenenwechsel: kleinere Buttons, gestapelt links neben Springen */
+      #tc-layer-up,
+      #tc-layer-down {
+        width: 60px;
+        height: 60px;
+        font-size: 22px;
+        right: calc(max(16px, env(safe-area-inset-right)) + 92px);
+      }
+      #tc-layer-up {
+        bottom: calc(max(16px, env(safe-area-inset-bottom)) + 76px);
+      }
     </style>
-    <script type="module" crossorigin src="/snootventure/claude/mensch-hund-layers-prototype-rsdxby/assets/index-DYbeSfSM.js"></script>
+    <script type="module" crossorigin src="/snootventure/claude/mensch-hund-layers-prototype-rsdxby/assets/index-D2V76b_H.js"></script>
   </head>
   <body>
     <div id="game"></div>
@@ -77,6 +88,8 @@
       <div class="tc-btn" id="tc-left">◀</div>
       <div class="tc-btn" id="tc-right">▶</div>
       <div class="tc-btn" id="tc-jump">▲</div>
+      <div class="tc-btn" id="tc-layer-up">⇧</div>
+      <div class="tc-btn" id="tc-layer-down">⇩</div>
     </div>
   </body>
 </html>
