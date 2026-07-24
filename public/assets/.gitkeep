@@ -1,0 +1,13 @@
+# Drop Kenney CC0 art here.
+#
+# Recommended packs (https://kenney.nl/assets):
+#   - "Pixel Platformer"  or  "New Platformer Pack"
+#
+# Suggested layout:
+#   public/assets/kenney/tiles.png
+#   public/assets/kenney/characters.png
+#
+# Then load them in src/scenes/BootScene.ts (preload) instead of the generated
+# placeholder rectangles, and swap the texture keys used by Player/GameScene.
+# Files under public/ are copied verbatim into the build and are referenced
+# relative to the Vite `base`, e.g. `assets/kenney/tiles.png`.
