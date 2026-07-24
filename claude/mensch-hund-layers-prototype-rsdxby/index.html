@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Snootventure — Layer-Prototyp</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3' y='2' width='10' height='12' rx='2' fill='%23f5e663'/%3E%3C/svg%3E"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #10131a;
+        height: 100%;
+        overflow: hidden;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+      }
+      /* Touch-Controls: nur auf Geräten mit grobem Zeiger (Handy/Tablet) sichtbar */
+      #touch-controls {
+        display: none;
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 10;
+      }
+      @media (pointer: coarse) {
+        #touch-controls {
+          display: block;
+        }
+      }
+      .tc-btn {
+        position: absolute;
+        bottom: max(16px, env(safe-area-inset-bottom));
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.75);
+        font: 700 26px/1 system-ui, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: auto;
+        touch-action: none;
+      }
+      .tc-btn:active {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      #tc-left {
+        left: max(16px, env(safe-area-inset-left));
+      }
+      #tc-right {
+        left: calc(max(16px, env(safe-area-inset-left)) + 88px);
+      }
+      #tc-jump {
+        right: max(16px, env(safe-area-inset-right));
+      }
+    </style>
+    <script type="module" crossorigin src="/snootventure/claude/mensch-hund-layers-prototype-rsdxby/assets/index-D1t8BpMW.js"></script>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="touch-controls">
+      <div class="tc-btn" id="tc-left">◀</div>
+      <div class="tc-btn" id="tc-right">▶</div>
+      <div class="tc-btn" id="tc-jump">▲</div>
+    </div>
+  </body>
+</html>
