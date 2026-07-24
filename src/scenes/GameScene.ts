@@ -1,16 +1,18 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/GameConfig';
+import { TEST_LEVEL } from '../config/testLevel';
 import { PlayerInput } from '../core/input';
+import { LayerManager } from '../core/LayerManager';
 import { Player } from '../entities/Player';
 
 /**
- * M1: Eine einzelne Ebene mit Boden + Plattformen und dem Player.
- * Ab M2 wandert die Plattform-Erzeugung in Layer/LayerManager
- * (kanonische StaticGroups + Präsentations-Container).
+ * M2: Drei Ebenen als Diorama (Scale/Offset/Tint pro Abstand zur aktiven
+ * Ebene). Der Player läuft auf Ebene 0; Wechsel folgt in M3.
  */
 export class GameScene extends Phaser.Scene {
   private player!: Player;
   private playerInput!: PlayerInput;
+  private layerManager!: LayerManager;
 
   constructor() {
     super('Game');
@@ -22,14 +24,30 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.setBackgroundColor(0x181c26);
 
-    const platforms = this.buildPlatforms();
+    // Pivot: Skalierung zentriert auf die Boden-Mitte, damit die hinteren
+    // Ebenen "auf dem Boden stehend" nach hinten rücken.
+    this.layerManager = new LayerManager(this, {
+      x: worldWidth / 2,
+      y: worldHeight - 48,
+    });
+
+    for (const layerDef of TEST_LEVEL) {
+      const layer = this.layerManager.createLayer();
+      for (const p of layerDef.platforms) {
+        layer.addPlatform(this, p.x, p.y, p.width, p.height);
+      }
+    }
 
     this.player = new Player(this, 120, worldHeight - 120);
-    this.physics.add.collider(this.player.sprite, platforms);
+    const startLayer = this.layerManager.layers[0];
+    if (startLayer) this.player.attachToLayer(startLayer);
+
+    this.layerManager.applyPresentation(this.layerManager.activeIndex);
 
     this.playerInput = new PlayerInput(this);
 
-    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.12);
+    // Kamera folgt dem kanonischen Carrier (Weltkoordinaten, nie skaliert).
+    this.cameras.main.startFollow(this.player.carrier, true, 0.12, 0.12);
 
     this.add
       .text(16, 16, 'A/D bzw. ←/→ laufen · Space springen (variabel)', {
@@ -37,36 +55,15 @@ export class GameScene extends Phaser.Scene {
         fontSize: '14px',
         color: '#9aa4b5',
       })
-      .setScrollFactor(0);
-  }
-
-  private buildPlatforms(): Phaser.Physics.Arcade.StaticGroup {
-    const { worldWidth, worldHeight } = GAME_CONFIG;
-    const color = GAME_CONFIG.layerColors[0].platform;
-    const group = this.physics.add.staticGroup();
-
-    const addPlatform = (x: number, y: number, width: number, height = 32): void => {
-      const img = group.create(x, y, 'block') as Phaser.Physics.Arcade.Image;
-      img.setOrigin(0, 0);
-      img.setDisplaySize(width, height);
-      img.setTint(color);
-      img.refreshBody();
-    };
-
-    // Durchgehender Boden
-    addPlatform(0, worldHeight - 48, worldWidth, 48);
-    // Ein paar Plattformen zum Testen von Sprunghöhe/Coyote/Buffer
-    addPlatform(360, worldHeight - 168, 192);
-    addPlatform(680, worldHeight - 268, 160);
-    addPlatform(980, worldHeight - 200, 128);
-    addPlatform(1280, worldHeight - 320, 192);
-    addPlatform(1660, worldHeight - 220, 160);
-    addPlatform(1980, worldHeight - 360, 224);
-
-    return group;
+      .setScrollFactor(0)
+      .setDepth(100);
   }
 
   override update(time: number, delta: number): void {
-    this.player.update(time, delta, this.playerInput.sample());
+    const input = this.playerInput.sample();
+    if (!this.layerManager.isTransitioning) {
+      this.player.update(time, delta, input);
+    }
+    this.player.syncDisplay();
   }
 }
