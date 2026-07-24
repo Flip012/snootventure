@@ -17,11 +17,16 @@ npm run build      # Produktions-Build nach dist/
 
 ## Steuerung
 
-| Aktion              | Tastatur        | Touch (Handy)   |
-| ------------------- | --------------- | --------------- |
-| Laufen              | A/D bzw. ←/→    | ◀ / ▶ Buttons   |
-| Springen (variabel) | Space           | ▲ Button        |
-| Ebene wechseln (M3) | W/S bzw. ↑/↓    | folgt in M3     |
+| Aktion                  | Tastatur     | Touch (Handy) |
+| ----------------------- | ------------ | ------------- |
+| Laufen                  | A/D bzw. ←/→ | ◀ / ▶ Buttons |
+| Springen (variabel)     | Space        | ▲ Button      |
+| Ebene nach hinten       | W bzw. ↑     | ⇧ Button      |
+| Ebene nach vorn         | S bzw. ↓     | ⇩ Button      |
+
+Ebenenwechsel geht nur in den sichtbaren ⇅-Zonen (auch in der Luft). Die
+kanonische Position bleibt erhalten — hat die Zielebene dort keine Plattform,
+fällt man (auf Ebene 1 gibt es dafür eine Bodenlücke bei x 1000–1300).
 
 Space kürzer halten = niedrigerer Sprung. Coyote Time (~100 ms) und Jump
 Buffering (~120 ms) sind aktiv; Werte in `src/config/GameConfig.ts`.

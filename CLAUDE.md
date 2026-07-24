@@ -74,6 +74,6 @@ Transforms von Phaser-Containern. Deshalb:
 ## Milestone-Status
 
 - [x] M1 — Setup + Movement (eine Ebene) + Deploy-Pipeline
-- [ ] M2 — LayerManager + statische Ebenendarstellung (3 Ebenen, Diorama)
-- [ ] M3 — Wechselpunkte + getweente Transition + Physik-Freeze
+- [x] M2 — LayerManager + statische Ebenendarstellung (3 Ebenen, Diorama)
+- [x] M3 — Wechselpunkte + getweente Transition + Physik-Freeze
 - [ ] M4 — Testlevel + Debug-Overlay + Politur

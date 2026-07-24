@@ -65,4 +65,7 @@ export const TEST_ZONES: readonly SwitchZoneDef[] = [
   { rect: { x: 230, y: 472, width: 96, height: 200 }, layers: [0, 1] },
   { rect: { x: 840, y: 472, width: 96, height: 200 }, layers: [0, 1, 2] },
   { rect: { x: 1720, y: 472, width: 96, height: 200 }, layers: [1, 2] },
+  // Über der Bodenlücke von Ebene 1: Wechsel von Ebene 0 hierher → Fallen
+  // (bewusst erlaubt, siehe CLAUDE.md). Extra hoch für Wechsel im Sprung.
+  { rect: { x: 1080, y: 372, width: 96, height: 300 }, layers: [0, 1] },
 ];

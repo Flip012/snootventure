@@ -48,6 +48,8 @@ export const GAME_CONFIG = {
   playerWidth: 28,
   playerHeight: 40,
   playerColor: 0xf5e663,
+  // Respawn-Punkt, wenn der Player durchfällt (Ebene ohne Plattform)
+  spawn: { x: 120, y: 600 },
 
   // --- Debug / Keys ---
   debugKey: 'F1',
