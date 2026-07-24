@@ -1,0 +1,60 @@
+name: Build & Deploy (GitHub Pages pro Branch)
+
+on:
+  push:
+    branches-ignore:
+      - gh-pages
+
+permissions:
+  contents: write
+
+# Deploys auf gh-pages serialisieren, damit parallele Branch-Pushes
+# sich nicht gegenseitig überschreiben.
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Volle Historie nicht nötig, aber Remote-Refs für gen-index.mjs
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      - name: Build mit Branch-spezifischem Base-Path
+        run: npm run build
+        env:
+          VITE_BASE: /snootventure/${{ github.ref_name }}/
+
+      - name: Root-Index (Branch-Liste) generieren
+        run: node scripts/gen-index.mjs dist-root
+
+      - name: Deploy Branch-Build nach gh-pages/<branch>
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          destination_dir: ${{ github.ref_name }}
+          keep_files: true
+          commit_message: 'deploy: ${{ github.ref_name }} @ ${{ github.sha }}'
+
+      - name: Deploy Root-Index nach gh-pages/
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist-root
+          keep_files: true
+          commit_message: 'deploy: root index @ ${{ github.sha }}'
