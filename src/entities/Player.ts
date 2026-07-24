@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GameConfig, layerColor } from '../config/GameConfig';
+import { GameConfig } from '../config/GameConfig';
+import { Entity } from './Entity';
 import {
   applyVariableJumpCut,
   canJump,
@@ -20,14 +21,11 @@ export interface PlayerDebugState {
 }
 
 /**
- * The player entity. In M1 it lives directly in world space on a single layer.
- * From M2/M3 its physics body stays in canonical world coordinates while its
- * presentation is reparented into a layer container — see CLAUDE.md.
+ * The player entity. Its physics body lives in canonical world coordinates
+ * (inherited from `Entity`); movement drives that body, and `syncDisplay()`
+ * mirrors it into the current layer's container each frame.
  */
-export class Player {
-  /** Arcade-physics sprite (body lives in canonical world coordinates). */
-  public readonly sprite: Phaser.Physics.Arcade.Sprite;
-
+export class Player extends Entity {
   private readonly cfg = GameConfig.player;
   private coyoteTimer = 0;
   private jumpBufferTimer = 0;
@@ -39,9 +37,7 @@ export class Player {
   private readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    this.sprite = scene.physics.add.sprite(x, y, 'player');
-    this.sprite.setTint(layerColor(0));
-    this.sprite.setDepth(10);
+    super(scene, x, y, 'player', GameConfig.player.color);
 
     const body = this.body;
     body.setSize(this.cfg.width, this.cfg.height);
@@ -56,10 +52,6 @@ export class Player {
     this.keyRight = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     this.keyJump = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.cursors = keyboard.createCursorKeys();
-  }
-
-  private get body(): Phaser.Physics.Arcade.Body {
-    return this.sprite.body as Phaser.Physics.Arcade.Body;
   }
 
   /** Called every frame with the frame delta in milliseconds. */
@@ -88,7 +80,7 @@ export class Player {
 
     // --- horizontal ---
     body.setVelocityX(computeHorizontalVelocity(body.velocity.x, moveDir, grounded, this.cfg, dtSec));
-    if (moveDir !== 0) this.sprite.setFlipX(moveDir < 0);
+    if (moveDir !== 0) this.display.setFlipX(moveDir < 0);
 
     // --- jump start (buffered press within the coyote window) ---
     if (canJump(this.coyoteTimer, this.jumpBufferTimer)) {
@@ -104,6 +96,9 @@ export class Player {
       this.isJumping = false;
     }
     if (grounded && body.velocity.y >= 0) this.isJumping = false;
+
+    // --- presentation follows the canonical body ---
+    this.syncDisplay();
   }
 
   getDebugState(): PlayerDebugState {
@@ -112,8 +107,8 @@ export class Player {
       grounded: body.blocked.down || body.touching.down,
       coyoteMs: Math.round(this.coyoteTimer),
       jumpBufferMs: Math.round(this.jumpBufferTimer),
-      x: Math.round(this.sprite.x),
-      y: Math.round(this.sprite.y),
+      x: Math.round(this.physics.x),
+      y: Math.round(this.physics.y),
       vx: Math.round(body.velocity.x),
       vy: Math.round(body.velocity.y),
     };

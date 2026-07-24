@@ -14,7 +14,7 @@ Save-System, Tiled.
 ## Milestones
 
 - **M1** ✅ Setup + Player-Movement (eine Ebene) + GitHub-Pages-Deployment.
-- **M2** LayerManager + statische Ebenendarstellung (3 Ebenen, Diorama).
+- **M2** ✅ LayerManager + statische Ebenendarstellung (3 Ebenen, Diorama).
 - **M3** Wechselpunkte + getweente Transition + Kamera-Zoom.
 - **M4** Testlevel + Debug-Overlay + Politur (optional Kenney-Assets).
 
@@ -33,10 +33,16 @@ und folgen **NICHT** der Skalierung/Position eines Phaser-`Container`. Deshalb:
   gesetzt; der Container-Transform erzeugt die korrekte Bildschirmposition. Für
   die aktive Ebene (Scale 1 / Offset 0) fallen Body und Display zusammen.
 
-Dieses Modell ist die Voraussetzung dafür, dass ab M2/M3 zwei Entities auf
+Dieses Modell ist die Voraussetzung dafür, dass ab M3 zwei Entities auf
 verschiedenen Ebenen gleichzeitig simuliert und dargestellt werden können.
-(In M1 lebt der Player noch direkt in Weltkoordinaten auf einer Ebene; die
-Aufteilung in eine `Entity`-Basisklasse kommt mit dem `LayerManager` in M2.)
+
+**Konkrete Umsetzung (ab M2):** Der Physics-Body (`Entity.physics`, unsichtbar)
+lebt in Weltkoordinaten und ist NICHT Kind eines Containers — so umgehen wir die
+Arcade-in-Container-Fallstricke. Das sichtbare `Entity.display` ist Kind des
+Layer-Containers; `syncDisplay()` kopiert pro Frame die Body-Position hinein.
+Der Diorama-Look entsteht, indem `Layer.updatePivot()` den Container pro Frame um
+das Kamera-Zentrum skaliert (korrekte, parallaxe Tiefenwirkung). Reine
+Transform-Mathematik steht Phaser-frei in `systems/layerTransform.ts` (getestet).
 
 ## Konventionen
 

@@ -1,22 +1,18 @@
 import Phaser from 'phaser';
-import { GameConfig, layerColor } from '../config/GameConfig';
+import { GameConfig } from '../config/GameConfig';
 import { Player } from '../entities/Player';
-
-/** A single platform rectangle in canonical world coordinates (top-left based). */
-interface PlatformRect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+import { prototypeLevel } from '../level/prototypeLevel';
+import { LayerManager } from '../systems/LayerManager';
 
 /**
- * M1 scene: one playable layer. A ground strip plus a few platforms, a player
- * with full platformer feel, and a follow camera. The layer system, switch
- * points and transitions arrive in M2/M3 — this scene stays deliberately small.
+ * M2 scene: three depth layers rendered as a diorama via the LayerManager, with
+ * the player registered on the front layer. Physics stays canonical; only the
+ * presentation is transformed. Switch points / transitions come in M3.
  */
 export class GameScene extends Phaser.Scene {
   private player!: Player;
+  private layers!: LayerManager;
+  private debugText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('game');
@@ -28,40 +24,34 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, levelWidth, levelHeight);
     this.cameras.main.setBackgroundColor(GameConfig.world.backgroundColor);
 
-    const platforms = this.buildPlatforms(this.m1Platforms(), layerColor(0));
+    this.layers = new LayerManager(this, prototypeLevel);
 
-    this.player = new Player(this, 120, levelHeight - 160);
-    this.physics.add.collider(this.player.sprite, platforms);
+    const spawn = prototypeLevel.spawn;
+    this.player = new Player(this, spawn.x, spawn.y);
+    this.layers.registerEntity(this.player, spawn.layerIndex);
 
-    this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.12);
+    // Camera follows the invisible canonical body → transform-independent.
+    this.cameras.main.startFollow(this.player.physics, true, 0.12, 0.12);
     this.cameras.main.setDeadzone(120, 80);
+
+    this.debugText = this.add
+      .text(8, 8, '', { fontFamily: 'monospace', fontSize: '14px', color: '#e6e9ef' })
+      .setScrollFactor(0)
+      .setDepth(1000);
+
+    // Pivot the layers once so the first rendered frame is already correct.
+    this.layers.update(this.cameras.main);
   }
 
   override update(_time: number, delta: number): void {
     this.player.update(delta);
-  }
+    this.layers.update(this.cameras.main);
 
-  /** Creates static-body rectangles from plain data and returns their bodies. */
-  private buildPlatforms(rects: PlatformRect[], color: number): Phaser.GameObjects.Rectangle[] {
-    return rects.map((r) => {
-      const rect = this.add.rectangle(r.x + r.w / 2, r.y + r.h / 2, r.w, r.h, color);
-      rect.setStrokeStyle(2, 0xffffff, 0.25);
-      this.physics.add.existing(rect, true);
-      return rect;
-    });
-  }
-
-  /** Hand-built M1 layout (single layer) — enough to exercise movement & jumps. */
-  private m1Platforms(): PlatformRect[] {
-    const { levelWidth, levelHeight } = GameConfig.world;
-    return [
-      { x: 0, y: levelHeight - 48, w: levelWidth, h: 48 }, // ground
-      { x: 360, y: levelHeight - 170, w: 200, h: 24 },
-      { x: 660, y: levelHeight - 280, w: 180, h: 24 },
-      { x: 980, y: levelHeight - 200, w: 160, h: 24 },
-      { x: 1260, y: levelHeight - 320, w: 220, h: 24 },
-      { x: 1620, y: levelHeight - 210, w: 180, h: 24 },
-      { x: 1980, y: levelHeight - 300, w: 260, h: 24 },
-    ];
+    const s = this.player.getDebugState();
+    this.debugText.setText(
+      `Ebene ${this.layers.active + 1}/${this.layers.count}   ` +
+        `FPS ${Math.round(this.game.loop.actualFps)}   ` +
+        `x:${s.x} y:${s.y}   grounded:${s.grounded ? 'y' : 'n'}`,
+    );
   }
 }

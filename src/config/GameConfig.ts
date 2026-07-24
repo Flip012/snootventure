@@ -52,6 +52,8 @@ export const GameConfig = {
     // --- collision box (also the placeholder sprite size) ---
     width: 28,
     height: 40,
+    /** Character tint — warm, to stay readable on any layer's colour. */
+    color: 0xffd166,
   },
 
   /**
@@ -67,6 +69,8 @@ export const GameConfig = {
     yOffsetStep: -46,
     /** Darken/desaturate amount per depth step (0..1). */
     tintStep: 0.18,
+    /** Colour that deeper layers blend toward (atmospheric depth fog). */
+    depthFogColor: 0x0e1220,
     /** Distinct colour stimmung per layer (front → back) for readability. */
     colors: [0x4fa4ff, 0x8b7bd8, 0x69c07a] as number[],
     /** How layers IN FRONT of the active one are pushed out of the way. */
