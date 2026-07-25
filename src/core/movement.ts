@@ -92,3 +92,23 @@ export function cutJumpVelocity(vy: number, variableJumpCut: number): number {
 export function clampFallSpeed(vy: number, maxFallSpeed: number): number {
   return Math.min(vy, maxFallSpeed);
 }
+
+/**
+ * Maximale Steighöhe eines vollen Sprungs (px): v²/(2g).
+ * Bestimmt, wie hoch Plattform-Stufen im Level sein dürfen.
+ */
+export function maxJumpHeight(jumpVelocity: number, gravityY: number): number {
+  return (jumpVelocity * jumpVelocity) / (2 * gravityY);
+}
+
+/**
+ * Maximale horizontale Sprungweite (px) bei voller Geschwindigkeit auf
+ * gleicher Höhe: Flugzeit 2*|v_y|/g mal v_x.
+ */
+export function maxJumpDistance(
+  jumpVelocity: number,
+  gravityY: number,
+  maxSpeed: number,
+): number {
+  return (maxSpeed * 2 * Math.abs(jumpVelocity)) / gravityY;
+}

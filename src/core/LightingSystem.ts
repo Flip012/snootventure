@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/GameConfig';
 import type { LampDef } from '../config/testLevel';
+import type { Entity } from './Entity';
 import type { Layer } from './Layer';
 import { bobPosition, pendulumAngle, shadowFrom } from './lightMath';
-import type { Player } from '../entities/Player';
 
 interface LampRuntime {
   readonly layer: Layer;
@@ -31,7 +31,10 @@ export class LightingSystem {
   private readonly darkness: Phaser.GameObjects.RenderTexture;
   /** Wiederverwendete, nicht gerenderte Stanz-Vorlage für ERASE. */
   private readonly stamp: Phaser.GameObjects.Image;
-  private readonly eyes: Phaser.GameObjects.Image;
+  /** Augen-Overlays (Mensch, Hund) — liegen über der Dunkelheits-Maske. */
+  private readonly eyeTargets: { entity: Entity; sprite: Phaser.GameObjects.Image }[] = [];
+  /** Figuren, die einen Boden-Schatten werfen. */
+  private readonly shadowCasters: { entity: Entity; width: number }[] = [];
   private readonly lamps: LampRuntime[] = [];
   private readonly shadowPool: Phaser.GameObjects.Image[] = [];
   private readonly marginX: number;
@@ -62,8 +65,20 @@ export class LightingSystem {
     // erase() überspringt unsichtbare Objekte. Dient nur als ERASE-Stanze.
     this.stamp = scene.add.image(0, 0, 'light');
     this.stamp.removeFromDisplayList();
+  }
 
-    this.eyes = scene.add.image(0, 0, 'eyes').setDepth(210);
+  /**
+   * Registriert eine Entity, deren Augen über der Dunkelheit sichtbar bleiben.
+   * Der Offset ist auf die Textur-Geometrie der jeweiligen Figur abgestimmt.
+   */
+  trackEyes(entity: Entity, textureKey: string): void {
+    const sprite = this.scene.add.image(0, 0, textureKey).setDepth(210);
+    this.eyeTargets.push({ entity, sprite });
+  }
+
+  /** Registriert eine Figur, die unter Lampen einen Schatten wirft. */
+  trackShadow(entity: Entity, width: number): void {
+    this.shadowCasters.push({ entity, width });
   }
 
   addLamp(layer: Layer, def: LampDef): void {
@@ -89,12 +104,7 @@ export class LightingSystem {
    * Augen nachführen. Läuft auch während der Transition (Lampen kleben an
    * ihren Ebenen-Containern); nur die Schatten pausieren dann.
    */
-  update(
-    timeMs: number,
-    camera: Phaser.Cameras.Scene2D.Camera,
-    player: Player,
-    isTransitioning: boolean,
-  ): void {
+  update(timeMs: number, camera: Phaser.Cameras.Scene2D.Camera, isTransitioning: boolean): void {
     const { viewWidth, viewHeight, lighting } = GAME_CONFIG;
     this.darkness.clear();
     this.darkness.fill(0x000000, lighting.overlayAlpha);
@@ -140,22 +150,29 @@ export class LightingSystem {
         .setDisplaySize(glowSize, glowSize)
         .setAlpha(lighting.glowAlpha * strength);
 
-      // Spieler-Schatten: nur Lampen der aktuellen Player-Ebene, kanonisch.
-      if (!isTransitioning && lamp.layer.index === player.layerIndex) {
-        const body = player.body();
-        const params = shadowFrom(
-          bob.x,
-          bob.y,
-          player.carrier.x,
-          player.carrier.y,
-          lamp.def.radius,
-          lighting.shadowMaxAlpha,
-        );
-        if (params) {
+      // Figuren-Schatten: nur von Lampen der Ebene, auf der die Figur steht.
+      if (!isTransitioning) {
+        for (const caster of this.shadowCasters) {
+          if (lamp.layer.index !== caster.entity.layerIndex) continue;
+          const body = caster.entity.body();
+          const params = shadowFrom(
+            bob.x,
+            bob.y,
+            caster.entity.carrier.x,
+            caster.entity.carrier.y,
+            lamp.def.radius,
+            lighting.shadowMaxAlpha,
+          );
+          if (!params) continue;
           const shadow = this.obtainShadow(shadowSlot++);
+          // Ellipse liegt AUF der Bodenfläche statt auf Fußhöhe zentriert —
+          // sonst verschwindet die obere Hälfte im dunklen Luftraum.
           shadow
-            .setPosition(player.carrier.x + params.offsetX, body.bottom - 2)
-            .setDisplaySize(lighting.shadowBaseWidth * params.stretch, lighting.shadowHeight)
+            .setPosition(
+              caster.entity.carrier.x + params.offsetX,
+              body.bottom + lighting.shadowHeight * 0.35,
+            )
+            .setDisplaySize(caster.width * params.stretch, lighting.shadowHeight)
             .setAlpha(params.alpha)
             .setVisible(true);
         }
@@ -171,16 +188,21 @@ export class LightingSystem {
     }
 
     // Augen folgen dem Display (inkl. Container-Transform während Transition).
-    const playerC = player.display.parentContainer;
-    const sx = playerC ? playerC.scaleX : 1;
-    const baseX = playerC ? playerC.x + sx * player.display.x : player.display.x;
-    const baseY = playerC ? playerC.y + sx * player.display.y : player.display.y;
-    const facing = player.display.flipX ? -1 : 1;
-    this.eyes
-      .setPosition(baseX + facing * 3 * sx, baseY - 9 * sx)
-      .setScale(sx)
-      .setFlipX(player.display.flipX)
-      .setAlpha(playerC ? playerC.alpha : 1);
+    for (const { entity, sprite } of this.eyeTargets) {
+      const c = entity.display.parentContainer;
+      const sx = c ? c.scaleX : 1;
+      const baseX = c ? c.x + sx * entity.display.x : entity.display.x;
+      const baseY = c ? c.y + (c.scaleY || sx) * entity.display.y : entity.display.y;
+      const facing = entity.display.flipX ? -1 : 1;
+      // Augen sitzen im Kopf: beim Hund weiter vorn und höher als beim Menschen.
+      const offX = entity.display.texture.key === 'dog' ? 11 : 3;
+      const offY = entity.display.texture.key === 'dog' ? 4 : 9;
+      sprite
+        .setPosition(baseX + facing * offX * sx, baseY - offY * sx)
+        .setScale(sx)
+        .setFlipX(entity.display.flipX)
+        .setAlpha(c ? c.alpha : 1);
+    }
   }
 
   private obtainShadow(slot: number): Phaser.GameObjects.Image {

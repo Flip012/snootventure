@@ -51,7 +51,12 @@ export class LayerManager {
    * Position der Entity bleibt erhalten — hat die Zielebene dort keine
    * Plattform, fällt sie nach dem Unfreeze (bewusst erlaubt).
    */
-  switchTo(target: number, entity: Entity, camera?: Phaser.Cameras.Scene2D.Camera): boolean {
+  switchTo(
+    target: number,
+    entity: Entity,
+    camera?: Phaser.Cameras.Scene2D.Camera,
+    onComplete?: () => void,
+  ): boolean {
     const targetLayer = this.layers[target];
     if (!targetLayer || target === this.activeIndex) return false;
     if (!this.guard.begin()) return false;
@@ -79,6 +84,7 @@ export class LayerManager {
         camera?.setZoom(1);
         entity.unfreeze();
         this.guard.end();
+        onComplete?.();
       },
     });
     return true;

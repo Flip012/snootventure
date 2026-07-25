@@ -15,23 +15,47 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     this.generatePlayerTexture();
     this.generateEyesTexture();
+    this.generateDogTexture();
+    this.generateDogEyesTexture();
     this.generateBlockTexture();
+    this.generateGoalTexture();
     this.generateLightTexture();
     this.generateShadowTexture();
     this.scene.start('Game');
   }
 
-  /** Schwarze Silhouette — die Augen sind bewusst NICHT Teil der Textur,
-   *  sie werden als eigenes Overlay über der Dunkelheits-Maske gerendert. */
+  /**
+   * Menschliche Silhouette: Kopf, Hals, Schultern, verjüngter Rumpf, ein
+   * angedeuteter Arm und zwei Beine mit Spalt. Die Augen sind bewusst NICHT
+   * Teil der Textur — sie liegen als Overlay über der Dunkelheits-Maske.
+   */
   private generatePlayerTexture(): void {
-    const w = GAME_CONFIG.playerWidth;
-    const h = GAME_CONFIG.playerHeight;
+    const w = GAME_CONFIG.playerWidth; // 22
+    const h = GAME_CONFIG.playerHeight; // 46
+    const cx = w / 2;
     const g = this.add.graphics();
     g.fillStyle(GAME_CONFIG.playerColor, 1);
-    g.fillRoundedRect(0, 0, w, h, 6);
-    // hauchdünne Kante, damit die Silhouette sich im Licht vom Boden abhebt
-    g.lineStyle(1, 0x2e2e2e, 0.9);
-    g.strokeRoundedRect(0, 0, w, h, 6);
+
+    // Kopf (leicht oval) + Hals
+    g.fillEllipse(cx, 8, 13, 15);
+    g.fillRect(cx - 2.5, 14, 5, 4);
+
+    // Oberkörper: breitere Schultern, zur Hüfte verjüngt
+    g.fillTriangle(cx - 8, 18, cx + 8, 18, cx + 5.5, 30);
+    g.fillTriangle(cx - 8, 18, cx + 5.5, 30, cx - 5.5, 30);
+    g.fillRoundedRect(cx - 8, 17, 16, 6, 3); // Schulterlinie
+    g.fillRect(cx - 5.5, 28, 11, 4); // Hüfte
+
+    // Arm, der nach vorn zur Leine geht
+    g.fillRoundedRect(cx + 4, 20, 4, 12, 2);
+
+    // Beine mit Spalt
+    g.fillRoundedRect(cx - 5.5, 31, 4.5, h - 32, 2);
+    g.fillRoundedRect(cx + 1, 31, 4.5, h - 32, 2);
+    // Füße
+    g.fillRect(cx - 6.5, h - 3, 6, 3);
+    g.fillRect(cx + 0.5, h - 3, 6, 3);
+
     g.generateTexture('player', w, h);
     g.destroy();
   }
@@ -40,9 +64,58 @@ export class BootScene extends Phaser.Scene {
   private generateEyesTexture(): void {
     const g = this.add.graphics();
     g.fillStyle(0xffffff, 1);
-    g.fillRoundedRect(0, 0, 5, 7, 2);
-    g.fillRoundedRect(11, 0, 5, 7, 2);
-    g.generateTexture('eyes', 16, 8);
+    g.fillRoundedRect(0, 0, 4, 5, 1.5);
+    g.fillRoundedRect(7, 0, 4, 5, 1.5);
+    g.generateTexture('eyes', 11, 5);
+    g.destroy();
+  }
+
+  /** Hund als schwarze Silhouette: Körper, Kopf, Beine, Rute. */
+  private generateDogTexture(): void {
+    const w = GAME_CONFIG.dog.width;
+    const h = GAME_CONFIG.dog.height;
+    const g = this.add.graphics();
+    g.fillStyle(GAME_CONFIG.playerColor, 1);
+    // Rumpf
+    g.fillRoundedRect(2, 5, w - 10, h - 9, 4);
+    // Kopf + Schnauze (nach rechts blickend)
+    g.fillRoundedRect(w - 12, 1, 11, 10, 3);
+    g.fillRect(w - 5, 5, 5, 5);
+    // Ohr
+    g.fillTriangle(w - 11, 2, w - 6, 2, w - 9, -3);
+    // Beine
+    g.fillRect(4, h - 5, 4, 5);
+    g.fillRect(w - 14, h - 5, 4, 5);
+    // Rute
+    g.fillTriangle(2, 6, 2, 11, -4, 1);
+    g.lineStyle(1, 0x2e2e2e, 0.9);
+    g.strokeRoundedRect(2, 5, w - 10, h - 9, 4);
+    g.generateTexture('dog', w, h);
+    g.destroy();
+  }
+
+  /** Ein Hundeauge — im Dunkeln das einzig Sichtbare am Hund. */
+  private generateDogEyesTexture(): void {
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff, 1);
+    g.fillRoundedRect(0, 0, 4, 5, 1.5);
+    g.generateTexture('dogEyes', 4, 5);
+    g.destroy();
+  }
+
+  /** Ziel-Marker: heller Rahmen, damit er auch im Dunkeln auffindbar ist. */
+  private generateGoalTexture(): void {
+    const w = 40;
+    const h = 56;
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff, 0.16);
+    g.fillRect(0, 0, w, h);
+    g.lineStyle(2, 0xffffff, 0.85);
+    g.strokeRect(1, 1, w - 2, h - 2);
+    g.fillStyle(0xffffff, 0.9);
+    g.fillRect(w / 2 - 3, h / 2 - 12, 6, 18);
+    g.fillRect(w / 2 - 3, h / 2 + 9, 6, 6);
+    g.generateTexture('goal', w, h);
     g.destroy();
   }
 

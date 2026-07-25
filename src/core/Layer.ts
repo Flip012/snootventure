@@ -39,8 +39,16 @@ export class Layer {
     this.platformVisuals.push(visual);
   }
 
-  /** Sichtbarer Marker für eine Switch-Zone (ab M3). */
-  addZoneMarker(scene: Phaser.Scene, rect: RectLike): void {
+  /**
+   * Sichtbarer Marker für eine Switch-Zone. Das Label zeigt genau die von
+   * DIESER Ebene aus möglichen Richtungen: ▲ = eine Ebene nach hinten (W/↑),
+   * ▼ = eine nach vorn (S/↓). Nur wo beides geht, stehen beide Pfeile.
+   */
+  addZoneMarker(scene: Phaser.Scene, rect: RectLike, connectedLayers: readonly number[]): void {
+    const canGoBack = connectedLayers.includes(this.index + 1);
+    const canGoFront = connectedLayers.includes(this.index - 1);
+    if (!canGoBack && !canGoFront) return;
+
     const marker = scene.add.rectangle(
       rect.x + rect.width / 2,
       rect.y + rect.height / 2,
@@ -50,15 +58,36 @@ export class Layer {
       0.08,
     );
     marker.setStrokeStyle(2, 0xffffff, 0.35);
+
+    const glyph = canGoBack && canGoFront ? '▲\n▼' : canGoBack ? '▲' : '▼';
     const label = scene.add
-      .text(rect.x + rect.width / 2, rect.y + 14, '⇅', {
+      .text(rect.x + rect.width / 2, rect.y + 20, glyph, {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '22px',
+        fontSize: '18px',
         color: '#ffffff',
+        align: 'center',
+        lineSpacing: -4,
       })
       .setOrigin(0.5, 0.5)
-      .setAlpha(0.7);
-    this.container.add([marker, label]);
+      .setAlpha(0.75);
+
+    // Klartext darunter, damit die Richtung eindeutig ist
+    const hint = scene.add
+      .text(
+        rect.x + rect.width / 2,
+        rect.y + (canGoBack && canGoFront ? 54 : 42),
+        canGoBack && canGoFront ? 'W hinten\nS vorn' : canGoBack ? 'W hinten' : 'S vorn',
+        {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '10px',
+          color: '#ffffff',
+          align: 'center',
+        },
+      )
+      .setOrigin(0.5, 0.5)
+      .setAlpha(0.5);
+
+    this.container.add([marker, label, hint]);
   }
 
   /**

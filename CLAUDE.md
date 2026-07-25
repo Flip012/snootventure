@@ -79,7 +79,34 @@ Transforms von Phaser-Containern. Deshalb:
 - Depth-Schichten: Ebenen-Container (-2..2) < Schatten (5) < Maske (150)
   < Lampen-Koronen (160) < Augen (210) < HUD (300).
 
-### 5. Deployment
+### 5. Mensch + Hund an der Leine (M4)
+
+- Beide sind `Entity`s mit Body/Display-Split — die Architektur trägt sie auf
+  getrennten Ebenen; aktuell wechselt der Hund mit (`switchTo(..., onComplete)`
+  hängt ihn auf der Zielebene wieder ein).
+- **Leine = einseitiger Feder-Constraint** (`leash.ts`): unterhalb der
+  Ruhelänge schlaff (schiebt nie), darüber zieht sie beide Enden zueinander.
+  Der Hund bekommt die volle Kraft, der Mensch nur `playerTug`.
+- **Gegenwehr:** `playerLeashResponse` — kein/gleichgerichteter Input ⇒ voller
+  Zug, der Mensch wird mitgezogen. Gegenläufiger Input ⇒ Zug gedämpft
+  (`resistDamping`), dafür sinkt seine Höchstgeschwindigkeit (`maxSlowdown`).
+- **Hund mit eigenem Kopf** (`dogBrain.ts`): Zustandsmaschine follow/sniff/
+  wander mit injizierbarem RNG (deterministisch testbar). Straffe Leine
+  erzwingt sofort `follow`.
+- Der Hund springt nur ~19 px (`dog.jumpVelocity`) — Treppenstufen (67 px)
+  schafft er nicht allein, der Mensch muss ihn hochziehen. Sein Hüpfer löst
+  nur aus, wenn die Leine ihn nach oben zerrt (mit Cooldown gegen Dauerhüpfen).
+
+### 6. Level-Design gegen Physik abgesichert
+
+- Aus `jumpVelocity`/`gravityY`/`maxSpeed` folgen ~80 px Steighöhe und ~172 px
+  Weite (`maxJumpHeight`/`maxJumpDistance` in `movement.ts`). Alle Stufen sind
+  deshalb 67 px, alle Pflicht-Lücken 110 px.
+- `levelGeometry.test.ts` hält Geometrie und Physik zusammen: Treppe begehbar,
+  Lücken überspringbar, Ziel **nur** über Zone D erreichbar, Hunde-Hüpfer
+  kleiner als eine Stufe. Ändert jemand die Tuning-Werte, schlägt der Test an.
+
+### 7. Deployment
 
 - GitHub Pages pro Branch: `gh-pages/<branch>/`, Vite-`base` wird im CI aus
   `github.ref_name` gesetzt (`VITE_BASE`). Branchnamen mit Slashes ergeben
@@ -100,4 +127,4 @@ Transforms von Phaser-Containern. Deshalb:
 - [x] M1 — Setup + Movement (eine Ebene) + Deploy-Pipeline
 - [x] M2 — LayerManager + statische Ebenendarstellung (3 Ebenen, Diorama)
 - [x] M3 — Wechselpunkte + getweente Transition + Physik-Freeze
-- [ ] M4 — Testlevel + Debug-Overlay + Politur
+- [x] M4 — Testlevel mit Ziel + Debug-Overlay (F1) + Hund an der Leine

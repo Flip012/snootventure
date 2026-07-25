@@ -17,16 +17,37 @@ npm run build      # Produktions-Build nach dist/
 
 ## Steuerung
 
-| Aktion                  | Tastatur     | Touch (Handy) |
-| ----------------------- | ------------ | ------------- |
-| Laufen                  | A/D bzw. ←/→ | ◀ / ▶ Buttons |
-| Springen (variabel)     | Space        | ▲ Button      |
-| Ebene nach hinten       | W bzw. ↑     | ⇧ Button      |
-| Ebene nach vorn         | S bzw. ↓     | ⇩ Button      |
+| Aktion              | Tastatur     | Touch (Handy) |
+| ------------------- | ------------ | ------------- |
+| Laufen              | A/D bzw. ←/→ | ◀ / ▶ Buttons |
+| Springen (variabel) | Space        | ▲ Button      |
+| Ebene nach hinten ▲ | W bzw. ↑     | ⇧ Button      |
+| Ebene nach vorn ▼   | S bzw. ↓     | ⇩ Button      |
+| Debug-Overlay       | F1           | —             |
 
-Ebenenwechsel geht nur in den sichtbaren ⇅-Zonen (auch in der Luft). Die
+Ebenenwechsel geht nur in den markierten Zonen (auch in der Luft). Jede Zone
+zeigt an, wohin es von dort aus geht: **▲ W hinten** und/oder **▼ S vorn**. Die
 kanonische Position bleibt erhalten — hat die Zielebene dort keine Plattform,
-fällt man (auf Ebene 1 gibt es dafür eine Bodenlücke bei x 1000–1300).
+fällt man (auf Ebene 2 gibt es dafür eine Bodenlücke bei x 1000–1300).
+
+## Ziel und Route
+
+Start links auf Ebene 1, Ziel oben rechts auf Ebene 2. Der Weg führt zwingend
+über die hinterste Ebene:
+
+1. Bodenlücke bei x 420 überspringen
+2. Zone B (x 840, verbindet alle drei Ebenen) → zweimal ▲ auf Ebene 3
+3. Lücke bei x 1250 überspringen, weiter nach rechts
+4. Treppe ab x 1900 in drei Sprüngen hoch
+5. Zone D (x 2280, nur Ebene 2↔3) → ▼ auf Ebene 2 → Ziel
+
+## Mensch und Hund
+
+Der Hund hängt an einer Leine (Federphysik) und hat einen eigenen Kopf: Er
+folgt, bleibt aber zwischendurch zum Schnüffeln stehen oder trottet eigenwillig
+los. Zieht er, wirst du mitgezogen — stemmst du dich dagegen, kommst du
+langsamer voran. Springen kann er wie ein echter Hund nur minimal; Treppen
+schafft er nicht allein, du musst ihn an der Leine hochziehen.
 
 Space kürzer halten = niedrigerer Sprung. Coyote Time (~100 ms) und Jump
 Buffering (~120 ms) sind aktiv; Werte in `src/config/GameConfig.ts`.

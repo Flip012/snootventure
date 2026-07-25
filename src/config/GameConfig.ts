@@ -60,19 +60,59 @@ export const GAME_CONFIG = {
     glowScale: 0.32, // Korona-Größe relativ zum Lichtradius
     // Lampen fernerer Ebenen stanzen schwächer: Faktor = 1 - depthDimming * (1 - Scale)
     depthDimming: 4,
-    shadowMaxAlpha: 0.8, // maximale Deckkraft des Spieler-Schattens
-    shadowBaseWidth: 54, // Schattenbreite (px) direkt unter der Lampe
-    shadowHeight: 13, // Schatten-Ellipsenhöhe (px)
+    shadowMaxAlpha: 1, // maximale Deckkraft des Spieler-Schattens
+    shadowBaseWidth: 62, // Schattenbreite (px) direkt unter der Lampe
+    shadowHeight: 16, // Schatten-Ellipsenhöhe (px)
     ropeColor: 0x4a4a4a,
     bulbColor: 0xf2f2f2,
   },
 
   // --- Player (schwarze Silhouette, im Dunkeln nur Augen sichtbar) ---
-  playerWidth: 28,
-  playerHeight: 40,
+  // Schlankere, höhere Proportionen → menschlichere Silhouette
+  playerWidth: 22,
+  playerHeight: 46,
   playerColor: 0x0d0d0d,
   // Respawn-Punkt, wenn der Player durchfällt (Ebene ohne Plattform)
   spawn: { x: 120, y: 600 },
+
+  // --- Hund (folgt dem Player, hängt an der Leine, hat eigenen Kopf) ---
+  dog: {
+    width: 34,
+    height: 20,
+    maxSpeed: 250, // etwas schneller als der Player, damit er aufholen kann
+    accel: 2200,
+    airAccel: 1400,
+    drag: 2600,
+    airDrag: 500,
+    // Hunde-Hüpfer: ~19px hoch (v²/2g) — kommt allein KEINE 67px-Stufe hoch,
+    // dafür muss der Mensch ihn an der Leine hochziehen.
+    jumpVelocity: -210,
+    followDistance: 70, // näher als das läuft er nicht heran
+    spawnOffsetX: -60, // Startposition relativ zum Player-Spawn
+    // Eigenständiges Verhalten (Schnüffeln/Streunen) in Ruhephasen
+    brain: {
+      sniffMs: [700, 1800] as [number, number],
+      wanderMs: [500, 1200] as [number, number],
+      followMs: [900, 2000] as [number, number],
+      sniffChance: 0.45, // Rest verteilt sich auf Streunen
+      /** Ab diesem Anteil der Leinenlänge zieht die Leine, der Hund folgt. */
+      leashHeel: 0.85,
+    },
+  },
+
+  // --- Leine (Feder-Constraint zwischen Player und Hund) ---
+  leash: {
+    length: 130, // ab dieser kanonischen Distanz wird die Leine straff
+    spring: 20, // Zug-Beschleunigung (px/s²) pro px Überdehnung
+    maxAccel: 2600, // Deckel > gravityY, damit der Hund an der Kante baumeln kann
+    playerTug: 0.32, // Anteil des Zugs, der als Ruck auf den Menschen wirkt
+    // Stemmt sich der Mensch gegen den Zug, kommt weniger Kraft an …
+    resistDamping: 0.4,
+    // … dafür bremst der ziehende Hund ihn um bis zu diesen Anteil aus.
+    maxSlowdown: 0.5,
+    sagPx: 26, // maximaler Durchhang der lockeren Leine (nur visuell)
+    color: 0x8a8a8a,
+  },
 
   // --- Debug / Keys ---
   debugKey: 'F1',
