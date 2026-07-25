@@ -46,11 +46,14 @@ Für Movement-Feel zuerst an `player.moveAccel`, `player.maxSpeed`,
 `player.jumpVelocity`, `player.variableJumpCut`, `player.coyoteMs` und
 `player.jumpBufferMs` drehen.
 
-## Grafik
+## Grafik / Art-Direction
 
-Der Build nutzt generierte, farbcodierte Platzhalter-Texturen (keine
-Download-Abhängigkeit). Zum Einbinden von [Kenney](https://kenney.nl/assets)
-CC0-Assets siehe [`public/assets/.gitkeep`](public/assets/.gitkeep).
+Komplett **Schwarz-Weiß/Graustufen** in einer **dunklen Umgebung**: Lampen
+(auch schwingende) beleuchten die Szene, der Spieler wirft mitschwingende
+Schatten und ist selbst nur als **leuchtende Augen** sichtbar. Alle Licht-,
+Schatten- und Augen-Werte stehen unter `GameConfig.lighting`. Texturen sind
+generiert (keine Download-Abhängigkeit); Kenney-CC0-Slot siehe
+[`public/assets/.gitkeep`](public/assets/.gitkeep).
 
 ## Projektstruktur
 

@@ -3,6 +3,7 @@ import { GameConfig } from '../config/GameConfig';
 import { Player } from '../entities/Player';
 import { prototypeLevel } from '../level/prototypeLevel';
 import { LayerManager } from '../systems/LayerManager';
+import { LightingSystem } from '../systems/LightingSystem';
 
 /**
  * M2 scene: three depth layers rendered as a diorama via the LayerManager, with
@@ -12,6 +13,7 @@ import { LayerManager } from '../systems/LayerManager';
 export class GameScene extends Phaser.Scene {
   private player!: Player;
   private layers!: LayerManager;
+  private lighting!: LightingSystem;
   private debugText!: Phaser.GameObjects.Text;
 
   constructor() {
@@ -34,6 +36,10 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.physics, true, 0.12, 0.12);
     this.cameras.main.setDeadzone(120, 80);
 
+    // Lamps live on the active (playable) layer; they light the scene.
+    const activeLamps = prototypeLevel.layers[spawn.layerIndex]?.lamps ?? [];
+    this.lighting = new LightingSystem(this, activeLamps, this.player);
+
     this.debugText = this.add
       .text(8, 8, '', { fontFamily: 'monospace', fontSize: '14px', color: '#e6e9ef' })
       .setScrollFactor(0)
@@ -43,9 +49,10 @@ export class GameScene extends Phaser.Scene {
     this.layers.update(this.cameras.main);
   }
 
-  override update(_time: number, delta: number): void {
+  override update(time: number, delta: number): void {
     this.player.update(delta);
     this.layers.update(this.cameras.main);
+    this.lighting.update(time, this.cameras.main);
 
     const s = this.player.getDebugState();
     this.debugText.setText(

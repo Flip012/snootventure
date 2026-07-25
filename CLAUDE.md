@@ -63,8 +63,16 @@ Transform-Mathematik steht Phaser-frei in `systems/layerTransform.ts` (getestet)
 
 - **Milestone-Kadenz:** Stop nach M1 (Deploy + Movement im Browser prüfen), dann
   M2→M3, Stop nach M3 (Transition muss manuell beurteilt werden).
-- **Grafik:** generierte, farbcodierte Platzhalter (klare Farbstimmung pro Ebene
-  für Tiefen-Lesbarkeit). Kenney-CC0-Slot in `public/assets/` dokumentiert.
+- **Grafik/Art-Direction:** komplett Schwarz-Weiß/Graustufen, dunkle Umgebung.
+  Tiefe liest sich über Skalierung/Versatz + „weiter hinten = dunkler". Kenney-
+  CC0-Slot in `public/assets/` dokumentiert.
+- **Beleuchtung & Schatten (`systems/LightingSystem.ts`):** Ein dunkles
+  Screen-Space-Overlay (RenderTexture) wird pro Lampe per weichem Radial-ERASE
+  „aufgerissen" → nur nahe Lampen sieht man die Umgebung. Lampen können
+  **schwingen** (Pendel an einer Schnur); der Spieler wirft pro Lampe einen
+  projizierten Schatten (schwingt mit). Der Spieler-Körper ist eine dunkle
+  Silhouette (nur im Licht sichtbar); zwei **leuchtende Augen** liegen über dem
+  Overlay und sind immer sichtbar. Alle Werte unter `GameConfig.lighting`.
 - **Front-Layer-Ausblenden:** konfigurierbar (Fade + leichtes Nach-unten-Sliden),
   Default in `GameConfig.layers.frontHide`.
 - **Transition-im-Sprung:** Player-Body wird während der Transition eingefroren

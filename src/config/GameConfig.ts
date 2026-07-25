@@ -14,7 +14,8 @@ export const GameConfig = {
     /** Total level bounds — larger than the viewport so the camera moves. */
     levelWidth: 2400,
     levelHeight: 720,
-    backgroundColor: '#12161f',
+    /** Near-black — the world is dark; lamps carve out what you can see. */
+    backgroundColor: '#050506',
   },
 
   player: {
@@ -52,8 +53,8 @@ export const GameConfig = {
     // --- collision box (also the placeholder sprite size) ---
     width: 28,
     height: 40,
-    /** Character tint — warm, to stay readable on any layer's colour. */
-    color: 0xffd166,
+    /** Body silhouette — dark grey, only faintly visible when lit by a lamp. */
+    color: 0x2b2d30,
   },
 
   /**
@@ -68,11 +69,11 @@ export const GameConfig = {
     /** Each layer further back shifts up by this many px (negative = up). */
     yOffsetStep: -46,
     /** Darken/desaturate amount per depth step (0..1). */
-    tintStep: 0.18,
+    tintStep: 0.22,
     /** Colour that deeper layers blend toward (atmospheric depth fog). */
-    depthFogColor: 0x0e1220,
-    /** Distinct colour stimmung per layer (front → back) for readability. */
-    colors: [0x4fa4ff, 0x8b7bd8, 0x69c07a] as number[],
+    depthFogColor: 0x050506,
+    /** Monochrome greys per layer (front → back), brighter in front. */
+    colors: [0xb9bdc1, 0x8b8f93, 0x64686c] as number[],
     /** How layers IN FRONT of the active one are pushed out of the way. */
     frontHide: {
       /** Fade the front layer(s) toward this alpha. */
@@ -89,6 +90,58 @@ export const GameConfig = {
     easing: 'Cubic.easeInOut',
     /** Extra camera zoom applied per depth step during a switch. */
     cameraZoomPerDepth: 0.06,
+  },
+
+  /**
+   * Darkness, lamps and cast shadows. The world is nearly black; each lamp
+   * carves a soft circle of visibility, and the player casts a shadow away from
+   * every nearby lamp. Swinging lamps make those shadows sway.
+   */
+  lighting: {
+    /** Opacity of the darkness overlay outside any light (1 = pitch black). */
+    ambientDarkness: 0.93,
+    /** Colour of the darkness overlay. */
+    overlayColor: 0x000000,
+    /** Default light radius in world px if a lamp doesn't override it. */
+    lightRadiusDefault: 230,
+    /** Additive bulb-glow strength (0..1) and its size relative to the light. */
+    glowAlpha: 0.55,
+    glowScale: 0.62,
+    /** Lamp fixtures (cord + bulb) drawn in greyscale. */
+    lamp: { cordColor: 0x3a3d40, bulbColor: 0xf2f2f2, bulbRadius: 6 },
+
+    /** Player cast-shadow look. */
+    shadow: {
+      color: 0x000000,
+      /** Max opacity right next to a lamp. */
+      opacity: 0.55,
+      /** Shadow length range in world px (near lamp → far lamp). */
+      minLen: 26,
+      maxLen: 250,
+      /** Shadow width as a factor of player width, at the foot / far end. */
+      widthNear: 1.05,
+      widthFar: 1.85,
+      /** Beyond this distance a lamp casts no visible shadow. */
+      maxDist: 560,
+    },
+
+    /** Glowing eyes — the only always-visible part of the player. */
+    eyes: {
+      color: 0xffffff,
+      radius: 3,
+      /** Horizontal spacing between the two eyes (px). */
+      spacing: 9,
+      /** Vertical offset from the body centre (negative = up toward the head). */
+      offsetY: -9,
+      /** Soft additive glow around each eye. */
+      glowRadius: 9,
+      glowAlpha: 0.5,
+      /** How far the eyes shift toward the facing direction (px). */
+      facingShift: 3,
+    },
+
+    /** Defaults for swinging lamps (a pendulum on a cord). */
+    swingDefault: { amplitudeDeg: 26, periodMs: 2600, length: 92 },
   },
 
   debug: {

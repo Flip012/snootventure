@@ -60,6 +60,7 @@ export class LayerManager {
   /** Register an entity on a layer: parent its display + collide with that layer. */
   registerEntity(entity: Entity, layerIndex: number): void {
     const layer = this.getLayer(layerIndex);
+    for (const underlay of entity.underlays) layer.addDisplay(underlay);
     layer.addDisplay(entity.display);
     entity.setLayerIndex(layerIndex);
     this.colliders.set(entity, this.scene.physics.add.collider(entity.physics, layer.platformBodies));

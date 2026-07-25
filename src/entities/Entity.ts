@@ -20,6 +20,13 @@ export abstract class Entity {
   /** Visible sprite, reparented into the current layer's container. */
   readonly display: Phaser.GameObjects.Sprite;
 
+  /**
+   * Extra objects that belong under `display` inside the layer container (e.g.
+   * the player's cast shadows). Added to the container before the display when
+   * the entity registers with a layer.
+   */
+  readonly underlays: Phaser.GameObjects.GameObject[] = [];
+
   private layerIndex = -1;
 
   protected constructor(

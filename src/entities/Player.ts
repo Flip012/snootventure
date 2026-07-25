@@ -20,16 +20,30 @@ export interface PlayerDebugState {
   vy: number;
 }
 
+/** Depth for the always-visible glowing eyes — above the darkness overlay. */
+const EYE_DEPTH = 600;
+
 /**
  * The player entity. Its physics body lives in canonical world coordinates
- * (inherited from `Entity`); movement drives that body, and `syncDisplay()`
- * mirrors it into the current layer's container each frame.
+ * (inherited from `Entity`). In the dark art direction the body is only a faint
+ * silhouette (visible when lit); the two glowing eyes are drawn above the
+ * darkness so they are always visible. Cast shadows are drawn by `LightingSystem`
+ * into `shadowGfx` (an underlay inside the layer container).
  */
 export class Player extends Entity {
   private readonly cfg = GameConfig.player;
+
+  /** Cast-shadow graphics — an underlay under the body, filled by lighting. */
+  readonly shadowGfx: Phaser.GameObjects.Graphics;
+
+  private readonly eyesGfx: Phaser.GameObjects.Graphics;
+  private readonly eyeGlowLeft: Phaser.GameObjects.Image;
+  private readonly eyeGlowRight: Phaser.GameObjects.Image;
+
   private coyoteTimer = 0;
   private jumpBufferTimer = 0;
   private isJumping = false;
+  private facing: -1 | 1 = 1;
 
   private readonly keyLeft: Phaser.Input.Keyboard.Key;
   private readonly keyRight: Phaser.Input.Keyboard.Key;
@@ -44,6 +58,16 @@ export class Player extends Entity {
     body.setCollideWorldBounds(true);
     body.setMaxVelocityY(this.cfg.maxFallSpeed);
 
+    // Shadow underlay lives inside the layer container, beneath the body.
+    this.shadowGfx = scene.add.graphics();
+    this.underlays.push(this.shadowGfx);
+
+    // Eyes: additive glow + crisp pupils, above the darkness overlay.
+    const eyeCfg = GameConfig.lighting.eyes;
+    this.eyeGlowLeft = this.makeEyeGlow(scene, eyeCfg.color, eyeCfg.glowRadius, eyeCfg.glowAlpha);
+    this.eyeGlowRight = this.makeEyeGlow(scene, eyeCfg.color, eyeCfg.glowRadius, eyeCfg.glowAlpha);
+    this.eyesGfx = scene.add.graphics().setDepth(EYE_DEPTH + 1);
+
     const keyboard = scene.input.keyboard;
     if (!keyboard) {
       throw new Error('Keyboard input plugin is required for the Player.');
@@ -52,6 +76,33 @@ export class Player extends Entity {
     this.keyRight = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     this.keyJump = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.cursors = keyboard.createCursorKeys();
+  }
+
+  private makeEyeGlow(
+    scene: Phaser.Scene,
+    color: number,
+    radius: number,
+    alpha: number,
+  ): Phaser.GameObjects.Image {
+    return scene.add
+      .image(0, 0, 'radial')
+      .setTint(color)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setAlpha(alpha)
+      .setDepth(EYE_DEPTH)
+      .setDisplaySize(radius * 2, radius * 2);
+  }
+
+  get facingDir(): -1 | 1 {
+    return this.facing;
+  }
+
+  get halfHeight(): number {
+    return this.cfg.height / 2;
+  }
+
+  get bodyWidth(): number {
+    return this.cfg.width;
   }
 
   /** Called every frame with the frame delta in milliseconds. */
@@ -80,7 +131,10 @@ export class Player extends Entity {
 
     // --- horizontal ---
     body.setVelocityX(computeHorizontalVelocity(body.velocity.x, moveDir, grounded, this.cfg, dtSec));
-    if (moveDir !== 0) this.display.setFlipX(moveDir < 0);
+    if (moveDir !== 0) {
+      this.facing = moveDir;
+      this.display.setFlipX(moveDir < 0);
+    }
 
     // --- jump start (buffered press within the coyote window) ---
     if (canJump(this.coyoteTimer, this.jumpBufferTimer)) {
@@ -99,6 +153,24 @@ export class Player extends Entity {
 
     // --- presentation follows the canonical body ---
     this.syncDisplay();
+    this.updateEyes();
+  }
+
+  /** Position the glowing eyes from the body + facing direction. */
+  private updateEyes(): void {
+    const cfg = GameConfig.lighting.eyes;
+    const cx = this.physics.x + this.facing * cfg.facingShift;
+    const cy = this.physics.y + cfg.offsetY;
+    const lx = cx - cfg.spacing / 2;
+    const rx = cx + cfg.spacing / 2;
+
+    this.eyeGlowLeft.setPosition(lx, cy);
+    this.eyeGlowRight.setPosition(rx, cy);
+
+    this.eyesGfx.clear();
+    this.eyesGfx.fillStyle(cfg.color, 1);
+    this.eyesGfx.fillCircle(lx, cy, cfg.radius);
+    this.eyesGfx.fillCircle(rx, cy, cfg.radius);
   }
 
   getDebugState(): PlayerDebugState {
