@@ -37,6 +37,14 @@ npm run typecheck
 
 Coyote Time (~100 ms) und Jump Buffering (~120 ms) sind aktiv.
 
+### Am Handy (Touch)
+
+Auf Touch-Geräten erscheinen **On-Screen-Buttons**: ◀ / ▶ zum Laufen (halten),
+▲ zum Springen (kurz antippen = kürzerer Sprung), sowie ⛶ oben rechts für den
+**Vollbild-Modus**. Das Spiel ist fürs **Querformat** ausgelegt; im Hochformat
+erscheint ein Hinweis, das Gerät zu drehen. Tastatur und Touch funktionieren
+parallel.
+
 ## Tuning
 
 Alle spielrelevanten Werte liegen zentral in

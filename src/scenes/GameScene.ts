@@ -4,6 +4,7 @@ import { Player } from '../entities/Player';
 import { prototypeLevel } from '../level/prototypeLevel';
 import { LayerManager } from '../systems/LayerManager';
 import { LightingSystem } from '../systems/LightingSystem';
+import { TouchControls, type TouchInput } from '../systems/TouchControls';
 
 /**
  * M2 scene: three depth layers rendered as a diorama via the LayerManager, with
@@ -28,8 +29,13 @@ export class GameScene extends Phaser.Scene {
 
     this.layers = new LayerManager(this, prototypeLevel);
 
+    // Touch controls only on touch devices; keyboard stays available on desktop.
+    const touch: TouchInput | null = this.sys.game.device.input.touch
+      ? new TouchControls(this)
+      : null;
+
     const spawn = prototypeLevel.spawn;
-    this.player = new Player(this, spawn.x, spawn.y);
+    this.player = new Player(this, spawn.x, spawn.y, touch);
     this.layers.registerEntity(this.player, spawn.layerIndex);
 
     // Camera follows the invisible canonical body → transform-independent.

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GameConfig } from '../config/GameConfig';
+import type { TouchInput } from '../systems/TouchControls';
 import { Entity } from './Entity';
 import {
   applyVariableJumpCut,
@@ -49,9 +50,11 @@ export class Player extends Entity {
   private readonly keyRight: Phaser.Input.Keyboard.Key;
   private readonly keyJump: Phaser.Input.Keyboard.Key;
   private readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  private readonly touch: TouchInput | null;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, touch: TouchInput | null = null) {
     super(scene, x, y, 'player', GameConfig.player.color);
+    this.touch = touch;
 
     const body = this.body;
     body.setSize(this.cfg.width, this.cfg.height);
@@ -111,14 +114,18 @@ export class Player extends Entity {
     const body = this.body;
     const grounded = body.blocked.down || body.touching.down;
 
-    // --- gather input ---
-    const leftDown = this.keyLeft.isDown || this.cursors.left.isDown;
-    const rightDown = this.keyRight.isDown || this.cursors.right.isDown;
+    // --- gather input (keyboard OR touch) ---
+    const leftDown = this.keyLeft.isDown || this.cursors.left.isDown || (this.touch?.leftDown ?? false);
+    const rightDown =
+      this.keyRight.isDown || this.cursors.right.isDown || (this.touch?.rightDown ?? false);
     const moveDir: -1 | 0 | 1 = leftDown === rightDown ? 0 : leftDown ? -1 : 1;
 
-    // Jump is Space only; arrow up/down stay reserved for layer switching (M3).
-    const jumpPressed = Phaser.Input.Keyboard.JustDown(this.keyJump);
-    const jumpReleased = Phaser.Input.Keyboard.JustUp(this.keyJump);
+    // Jump is Space or the touch button; arrow up/down stay reserved for layer
+    // switching (M3). Poll touch first so its edge flags are always consumed.
+    const touchJumpPressed = this.touch?.pollJumpPressed() ?? false;
+    const touchJumpReleased = this.touch?.pollJumpReleased() ?? false;
+    const jumpPressed = Phaser.Input.Keyboard.JustDown(this.keyJump) || touchJumpPressed;
+    const jumpReleased = Phaser.Input.Keyboard.JustUp(this.keyJump) || touchJumpReleased;
 
     // --- assist timers ---
     this.coyoteTimer = updateCoyote(this.coyoteTimer, grounded, this.cfg.coyoteMs, dtMs);

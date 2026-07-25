@@ -144,6 +144,26 @@ export const GameConfig = {
     swingDefault: { amplitudeDeg: 26, periodMs: 2600, length: 92 },
   },
 
+  /** On-screen touch controls (shown only on touch devices). */
+  ui: {
+    touch: {
+      /** Button radius in logical px. */
+      radius: 46,
+      /** Gap between the left/right buttons. */
+      gap: 26,
+      /** Margin from the screen edges. */
+      margin: 30,
+      /** Translucent look that suits the dark scene. */
+      fillColor: 0xffffff,
+      fillAlpha: 0.1,
+      strokeColor: 0xffffff,
+      strokeAlpha: 0.35,
+      labelColor: '#e8ebf0',
+      /** Above everything else (overlay 500, eyes 600, debug 1000). */
+      depth: 2000,
+    },
+  },
+
   debug: {
     /** Toggles the debug overlay (wired in M4). */
     toggleKey: 'F1',

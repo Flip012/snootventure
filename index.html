@@ -12,8 +12,13 @@
       body {
         margin: 0;
         height: 100%;
-        background: #0b0e14;
+        background: #050506;
         overflow: hidden;
+        /* Stop the browser from scrolling / zooming on touch gestures. */
+        touch-action: none;
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
       }
       #game {
         width: 100%;
@@ -22,10 +27,49 @@
       #game canvas {
         display: block;
       }
+      /* Rotate hint — the game is designed for landscape. */
+      #rotate {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+        background: #050506;
+        color: #e8ebf0;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+        padding: 2rem;
+        z-index: 10;
+      }
+      #rotate .icon {
+        font-size: 3rem;
+        animation: rothint 2s ease-in-out infinite;
+      }
+      @keyframes rothint {
+        0%,
+        100% {
+          transform: rotate(-12deg);
+        }
+        50% {
+          transform: rotate(78deg);
+        }
+      }
+      /* Only phones/tablets in portrait: nudge to landscape. */
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate {
+          display: flex;
+        }
+      }
     </style>
   </head>
   <body>
     <div id="game"></div>
+    <div id="rotate">
+      <div class="icon">📱↻</div>
+      <div>Bitte das Gerät ins <strong>Querformat</strong> drehen.</div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

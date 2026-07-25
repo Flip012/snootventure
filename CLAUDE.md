@@ -82,6 +82,11 @@ Transform-Mathematik steht Phaser-frei in `systems/layerTransform.ts` (getestet)
 - **Wechselpunkt am Rand:** Switch-Zonen sind kanonische Rechtecke; Eligibility =
   Body-Overlap (kein Grounded-Zwang). Der `LayerManager` blockt weitere Wechsel,
   solange eine Transition läuft.
+- **Mobile/Touch:** `systems/TouchControls.ts` zeigt On-Screen-Buttons (◀ ▶ ▲
+  + Vollbild) nur auf Touch-Geräten; `Player` liest Tastatur ODER Touch über das
+  `TouchInput`-Interface. Spiel ist fürs Querformat ausgelegt (Portrait-Hinweis
+  in `index.html`, `touch-action: none`). Scale-Mode bleibt `FIT` (Letterbox auf
+  Schwarz, daher unsichtbar).
 - **Deploy:** `peaceiris/actions-gh-pages` pro Branch in ein Unterverzeichnis
   (`keep_files: true`) + generierte Root-`index.html`. Vite-`base` kommt pro
   Branch aus `VITE_BASE`.
