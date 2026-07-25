@@ -52,13 +52,17 @@ export const GAME_CONFIG = {
     // Interne Auflösung der Masken-Textur (0.5 = halbe Kantenlänge, 4x weniger
     // Fillrate — weiches Licht verzeiht das, wichtig für Mobile/SwiftShader)
     maskResolution: 0.5,
-    glowAlpha: 0.18, // Leuchtkorona um die Lampe
+    lightStrength: 0.75, // globale Lampen-Helligkeit (1 = volle Erase-Stärke)
+    // Lampen strahlen nach unten: Kegel-Zentrum liegt um diesen Anteil des
+    // Radius UNTER der Birne — Boden/Schatten bekommen Licht, oben bleibt dunkel
+    lightCenterOffset: 0.28,
+    glowAlpha: 0.14, // Leuchtkorona um die Lampe
     glowScale: 0.32, // Korona-Größe relativ zum Lichtradius
     // Lampen fernerer Ebenen stanzen schwächer: Faktor = 1 - depthDimming * (1 - Scale)
     depthDimming: 4,
-    shadowMaxAlpha: 0.65, // maximale Deckkraft des Spieler-Schattens
-    shadowBaseWidth: 46, // Schattenbreite (px) direkt unter der Lampe
-    shadowHeight: 12, // Schatten-Ellipsenhöhe (px)
+    shadowMaxAlpha: 0.8, // maximale Deckkraft des Spieler-Schattens
+    shadowBaseWidth: 54, // Schattenbreite (px) direkt unter der Lampe
+    shadowHeight: 13, // Schatten-Ellipsenhöhe (px)
     ropeColor: 0x4a4a4a,
     bulbColor: 0xf2f2f2,
   },

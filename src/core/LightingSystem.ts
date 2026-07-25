@@ -103,7 +103,10 @@ export class LightingSystem {
 
     for (const lamp of this.lamps) {
       const angle = lamp.def.swing ? pendulumAngle(timeMs, lamp.def.swing) : 0;
-      lamp.swingNode.setRotation(angle);
+      // Phaser-Rotation ist im Screen-Raum (y nach unten) im Uhrzeigersinn:
+      // +angle würde das Seil nach LINKS schwingen, bobPosition rechnet
+      // +angle = rechts. Negieren, damit Lampe und Lichtkegel synchron sind.
+      lamp.swingNode.setRotation(-angle);
 
       // Kanonische Lampenkörper-Position → Welt via Container-Transform
       // (Container sind nie rotiert: Welt = Pos + Scale * kanonisch).
@@ -115,14 +118,17 @@ export class LightingSystem {
       // Lampen weiter hinten leuchten schwächer — Faktor direkt aus dem
       // Container-Scale abgeleitet (aktiv = 1, pro Ebene dahinter deutlich weniger).
       const depthFactor = Math.max(0, Math.min(1, 1 - (1 - c.scaleX) * lighting.depthDimming));
-      const strength = c.alpha * depthFactor; // Front-Ebene: über alpha ausgeblendet
+      // Front-Ebene: über alpha ausgeblendet; lightStrength dimmt global.
+      const strength = c.alpha * depthFactor * lighting.lightStrength;
 
       // Licht aus der Maske stanzen. Maske ist scrollFactor 0 und wird vom
       // Kamera-Zoom mitskaliert → lokale Koordinaten relativ zum Kamerazentrum,
       // umgerechnet in die reduzierte Masken-Auflösung.
       const size = lamp.def.radius * 2 * c.scaleX * this.res;
+      // Kegel-Zentrum unterhalb der Birne (Lampenschirm strahlt nach unten).
+      const cyWorld = wy + lamp.def.radius * lighting.lightCenterOffset * c.scaleX;
       const px = (wx - camera.worldView.centerX + viewWidth / 2 + this.marginX) * this.res;
-      const py = (wy - camera.worldView.centerY + viewHeight / 2 + this.marginY) * this.res;
+      const py = (cyWorld - camera.worldView.centerY + viewHeight / 2 + this.marginY) * this.res;
       this.stamp.setDisplaySize(size, size);
       this.stamp.setAlpha(strength);
       this.darkness.erase(this.stamp, px, py);

@@ -63,9 +63,9 @@ export function shadowFrom(
   radius: number,
   maxAlpha: number,
 ): ShadowParams | null {
-  // Weicherer Exponent als beim Licht: Schatten bleiben auch am Rand des
+  // Linearer Falloff statt quadratisch: Schatten bleiben auch am Rand des
   // Kegels lesbar, sonst sind sie nur direkt unter der Lampe sichtbar.
-  const intensity = lightFalloff(Math.hypot(targetX - lampX, targetY - lampY), radius, 1.2);
+  const intensity = lightFalloff(Math.hypot(targetX - lampX, targetY - lampY), radius, 1);
   if (intensity < 0.02) return null;
 
   const dx = targetX - lampX;
