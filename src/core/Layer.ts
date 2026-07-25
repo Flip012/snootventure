@@ -24,7 +24,13 @@ export class Layer {
   }
 
   /** Plattform in kanonischen Koordinaten: unsichtbarer Body + sichtbarer Zwilling. */
-  addPlatform(scene: Phaser.Scene, x: number, y: number, width: number, height = 32): void {
+  addPlatform(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    width: number,
+    height: number = GAME_CONFIG.platformThickness,
+  ): void {
     const body = this.platforms.create(x, y, 'block') as Phaser.Physics.Arcade.Image;
     body.setOrigin(0, 0);
     body.setDisplaySize(width, height);
@@ -37,6 +43,19 @@ export class Layer {
     visual.setTint(this.baseColor);
     this.container.add(visual);
     this.platformVisuals.push(visual);
+  }
+
+  /**
+   * Bewuchs/Mobiliar in kanonischen Koordinaten — rein visuell (keine
+   * Kollision), aber für den Hund eine Schnüffelstelle. Steht mit der
+   * Unterkante auf dem angegebenen Punkt.
+   */
+  addProp(scene: Phaser.Scene, textureKey: string, x: number, y: number): void {
+    const prop = scene.add.image(x, y, textureKey);
+    prop.setOrigin(0.5, 1);
+    // Etwas dunkler als die Plattformen, damit die Silhouetten sich absetzen.
+    prop.setTint(Phaser.Display.Color.ValueToColor(this.baseColor).darken(25).color);
+    this.container.add(prop);
   }
 
   /**

@@ -10,6 +10,8 @@ export interface DebugState {
   readonly leashDistance: number;
   readonly leashTaut: boolean;
   readonly inZone: boolean;
+  /** Aktuelles Interesse des Hundes an seiner Zielstelle (0..1). */
+  readonly spotInterest: number;
 }
 
 /**
@@ -65,7 +67,13 @@ export class DebugOverlay {
           `   buffer ${player.debugBufferLeftMs() > 0 ? round(player.debugBufferLeftMs()) + 'ms' : '—'}`,
         '',
         `Hund       x ${round(dog.carrier.x)}  y ${round(dog.carrier.y)}  Ebene ${dog.layerIndex + 1}`,
-        `  v        ${round(db.velocity.x)} / ${round(db.velocity.y)}   ${dog.brain.mood}`,
+        `  v        ${round(db.velocity.x)} / ${round(db.velocity.y)}`,
+        `  Laune    ${dog.brain.mood}` +
+          (dog.brain.mood === 'spot'
+            ? ` #${dog.brain.targetSpot}` +
+              (dog.brain.lingering ? (dog.brain.marking ? ' (markiert)' : ' (schnüffelt)') : ' (unterwegs)') +
+              `  Interesse ${(state.spotInterest * 100).toFixed(0)}%`
+            : ''),
         `Leine      ${round(state.leashDistance)}px  ${
           state.leashTaut ? 'STRAFF' : 'locker'
         }  (max ${GAME_CONFIG.leash.length})`,

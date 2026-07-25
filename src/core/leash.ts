@@ -66,16 +66,18 @@ export function leashForce(player: Vec2, dog: Vec2, cfg: LeashConfig): LeashForc
 }
 
 /**
- * Laufrichtung des Hundes: Er hält Abstand `followDistance` zum Player und
- * bleibt stehen, wenn er nah genug ist (kein nervöses Zittern am Ziel).
+ * Laufrichtung des Hundes: Er hält Abstand `followDistance` zu `targetX` und
+ * bleibt stehen, wenn er nah genug ist (kein nervöses Zittern am Ziel). Der
+ * Aufrufer setzt das Ziel — beim gehenden Menschen ein Stück VOR ihm, weil
+ * Hunde an der Leine gern vorweg traben.
  * Straffe Leine überstimmt das — dann zieht die Feder ohnehin.
  */
 export function dogFollowInput(
   dogX: number,
-  playerX: number,
+  targetX: number,
   followDistance: number,
 ): -1 | 0 | 1 {
-  const dx = playerX - dogX;
+  const dx = targetX - dogX;
   if (Math.abs(dx) <= followDistance) return 0;
   return dx > 0 ? 1 : -1;
 }

@@ -147,6 +147,37 @@ describe('Hund kommt allein nicht die Treppe hoch', () => {
   });
 });
 
+describe('Erhöhte Plattformen versperren den Weg nicht', () => {
+  const GROUND_TOP = 672;
+  const thickness = GAME_CONFIG.platformThickness;
+
+  it('unter jedem Sims passt der Mensch aufrecht durch', () => {
+    for (let i = 0; i < TEST_LEVEL.length; i++) {
+      for (const p of layer(i)) {
+        if (p.y === GROUND_TOP) continue; // Boden
+        const clearance = GROUND_TOP - (p.y + (p.height ?? thickness));
+        expect(
+          clearance,
+          `Ebene ${i + 1}, Plattform bei x ${p.x} lässt nur ${clearance}px Durchgang`,
+        ).toBeGreaterThan(GAME_CONFIG.playerHeight);
+      }
+    }
+  });
+
+  it('auch zwischen zwei gestapelten Stufen bleibt Kopffreiheit', () => {
+    const stairs = layer(2)
+      .filter((p) => p.x >= 1900)
+      .slice()
+      .sort((a, b) => b.y - a.y);
+    for (let k = 1; k < stairs.length; k++) {
+      const standOn = stairs[k - 1]!;
+      const above = stairs[k]!;
+      const headroom = standOn.y - (above.y + thickness);
+      expect(headroom).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('Bodenlücke auf Ebene 2', () => {
   it('liegt unter der Fall-Zone bei x 1080', () => {
     const fallZone = TEST_ZONES.find((z) => z.rect.x === 1080)!;

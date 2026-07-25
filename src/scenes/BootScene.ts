@@ -19,9 +19,72 @@ export class BootScene extends Phaser.Scene {
     this.generateDogEyesTexture();
     this.generateBlockTexture();
     this.generateGoalTexture();
+    this.generatePropTextures();
     this.generateLightTexture();
     this.generateShadowTexture();
     this.scene.start('Game');
+  }
+
+  /**
+   * Bewuchs am Wegesrand: Busch, Strauch, Grasbüschel, Unkraut und
+   * Laternenpfahl — als weiße Silhouetten, die Ebene färbt sie per Tint ein.
+   * Alle Texturen haben ihren Ursprung unten mittig (Origin wird beim
+   * Platzieren gesetzt), damit sie auf dem Boden stehen.
+   */
+  private generatePropTextures(): void {
+    const g = this.add.graphics();
+    const white = 0xffffff;
+
+    // Busch: mehrere überlappende Ballen
+    g.clear();
+    g.fillStyle(white, 1);
+    g.fillEllipse(16, 26, 30, 20);
+    g.fillEllipse(9, 18, 18, 18);
+    g.fillEllipse(23, 17, 20, 19);
+    g.fillEllipse(16, 12, 16, 15);
+    g.fillRect(14, 26, 4, 6);
+    g.generateTexture('propBush', 32, 32);
+
+    // Strauch: schlanker, mit einzelnen Trieben
+    g.clear();
+    g.fillStyle(white, 1);
+    g.fillEllipse(13, 20, 22, 16);
+    g.fillEllipse(8, 14, 13, 13);
+    g.fillEllipse(18, 13, 12, 14);
+    g.fillRect(6, 6, 2, 12);
+    g.fillRect(19, 4, 2, 13);
+    g.fillRect(12, 20, 3, 6);
+    g.generateTexture('propShrub', 26, 26);
+
+    // Grasbüschel: einzelne Halme
+    g.clear();
+    g.fillStyle(white, 1);
+    g.fillTriangle(2, 14, 5, 14, 1, 3);
+    g.fillTriangle(6, 14, 9, 14, 8, 1);
+    g.fillTriangle(10, 14, 13, 14, 14, 2);
+    g.fillTriangle(14, 14, 17, 14, 19, 5);
+    g.fillRect(0, 12, 20, 2);
+    g.generateTexture('propGrass', 20, 14);
+
+    // Unkraut: höher, mit Blättchen
+    g.clear();
+    g.fillStyle(white, 1);
+    g.fillRect(7, 4, 2, 16);
+    g.fillEllipse(4, 9, 8, 5);
+    g.fillEllipse(12, 12, 8, 5);
+    g.fillEllipse(8, 4, 6, 5);
+    g.fillRect(2, 18, 12, 2);
+    g.generateTexture('propWeed', 16, 20);
+
+    // Laternenpfahl (niedriger Poller): der Klassiker für Hunde
+    g.clear();
+    g.fillStyle(white, 1);
+    g.fillRect(4, 6, 6, 30);
+    g.fillEllipse(7, 5, 12, 8);
+    g.fillRect(1, 33, 12, 3);
+    g.generateTexture('propPost', 14, 36);
+
+    g.destroy();
   }
 
   /**

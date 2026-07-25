@@ -8,6 +8,12 @@ export const GAME_CONFIG = {
   viewHeight: 540,
   worldWidth: 2400,
   worldHeight: 720,
+  /**
+   * Dicke erhöhter Plattformen (Simse). Muss so dünn sein, dass unter einer
+   * 67-px-Stufe noch der Mensch durchpasst: 67 - 16 = 51 px > playerHeight 46.
+   * Der Boden setzt seine Dicke separat (48).
+   */
+  platformThickness: 16,
 
   // --- Horizontales Movement ---
   moveAccel: 1900, // px/s² am Boden
@@ -89,7 +95,7 @@ export const GAME_CONFIG = {
     jumpVelocity: -210,
     followDistance: 70, // näher als das läuft er nicht heran
     spawnOffsetX: -60, // Startposition relativ zum Player-Spawn
-    // Eigenständiges Verhalten (Schnüffeln/Streunen) in Ruhephasen
+    // Eigenständiges Verhalten (Schnüffeln/Streunen/Stellen) in Ruhephasen
     brain: {
       sniffMs: [700, 1800] as [number, number],
       wanderMs: [500, 1200] as [number, number],
@@ -97,6 +103,29 @@ export const GAME_CONFIG = {
       sniffChance: 0.45, // Rest verteilt sich auf Streunen
       /** Ab diesem Anteil der Leinenlänge zieht die Leine, der Hund folgt. */
       leashHeel: 0.85,
+      // --- Schnüffel- und Pinkelstellen ---
+      /** Wahrscheinlichkeit, dass er statt zu dösen eine Stelle ansteuert. */
+      spotChance: 0.55,
+      spotSearchRadius: 230, // so weit schaut er sich um
+      /** Radius für den quadratischen Interessens-Abfall — zieht der Mensch
+       *  ihn darüber hinaus weg, verliert er die Lust. */
+      spotInterestRadius: 190,
+      giveUpInterest: 0.12,
+      arriveDistance: 20,
+      lingerMs: [800, 2000] as [number, number],
+      spotCooldownMs: 7000, // frisch besuchte Stelle ist erstmal langweilig
+      // --- Rückruf: der Hund merkt selbst, wenn er zu weit weg ist ---
+      recallStartRatio: 0.45, // ab 45% der Leinenlänge wird er unruhig
+      recallMaxPerSec: 3.5, // am Leinenende kehrt er praktisch sofort um
+      // --- Typisches Hundeverhalten ---
+      trotAhead: 46, // trabt dem gehenden Menschen ein Stück voraus
+      shakeChance: 0.12,
+      shakeMs: [420, 700] as [number, number],
+      zoomiesChance: 0.1,
+      zoomiesMs: [700, 1400] as [number, number],
+      zoomiesSpeed: 1.5,
+      sitAfterIdleMs: 2200, // steht der Mensch so lange, setzt er sich
+      sitChance: 0.6,
     },
   },
 

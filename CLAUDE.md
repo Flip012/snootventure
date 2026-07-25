@@ -96,15 +96,41 @@ Transforms von Phaser-Containern. Deshalb:
 - Der Hund springt nur ~19 px (`dog.jumpVelocity`) — Treppenstufen (67 px)
   schafft er nicht allein, der Mensch muss ihn hochziehen. Sein Hüpfer löst
   nur aus, wenn die Leine ihn nach oben zerrt (mit Cooldown gegen Dauerhüpfen).
+- **Bei straffer Leine läuft der Hund nach** (`mood ?? dogFollowInput`), er
+  wird NICHT schlaff. Sonst hängt er am Leinenende fest und bremst den
+  Menschen dauerhaft aus.
+
+### 5b. Schnüffelstellen und Hundeverhalten
+
+- Bewuchs (`props` in `testLevel.ts`: Busch, Strauch, Gras, Unkraut, Poller)
+  ist zugleich Deko und Datenquelle: Alles mit `appeal > 0` wird zur
+  `SniffSpot` auf seiner Ebene.
+- **Interesse fällt quadratisch mit dem Abstand** (`spotInterest`) — geht der
+  Mensch weiter, verliert der Hund schnell die Lust, statt den Fluss zu
+  blockieren. Aufgegebene Stellen bekommen eine Sperrzeit, damit er nicht
+  sofort umkehrt. Stellen jenseits der Leinenreichweite wählt er gar nicht.
+- **Rückruf statt hartem Cutoff** (`recallChance`): ab `recallStartRatio` der
+  Leinenlänge steigt die Rückkehr-Wahrscheinlichkeit pro Sekunde quadratisch
+  an. Der harte `leashHeel`-Stopp bleibt als letzte Sicherung.
+- Weitere Stimmungen: `shake` (schütteln), `sit` (setzt sich, wenn der Mensch
+  länger stillsteht — steht sofort wieder auf, sobald es weitergeht),
+  `zoomies` (kurzer Übermuts-Sprint mit Extra-Tempo und Hüpfern). Beim
+  Gehen trabt er dem Menschen um `trotAhead` voraus.
+- Körpersprache läuft rein über Rotation/Skalierung der Silhouette
+  (`Dog.animate`) — kein zusätzliches Textur-Material nötig.
 
 ### 6. Level-Design gegen Physik abgesichert
 
 - Aus `jumpVelocity`/`gravityY`/`maxSpeed` folgen ~80 px Steighöhe und ~172 px
   Weite (`maxJumpHeight`/`maxJumpDistance` in `movement.ts`). Alle Stufen sind
   deshalb 67 px, alle Pflicht-Lücken 110 px.
+- Erhöhte Plattformen sind nur `platformThickness` (16 px) dick. Sonst bleibt
+  unter einer 67-px-Stufe zu wenig Durchgang und jedes Sims wird zur Wand —
+  genau dieser Fehler hat den Spieler bei x 349 festgesetzt.
 - `levelGeometry.test.ts` hält Geometrie und Physik zusammen: Treppe begehbar,
   Lücken überspringbar, Ziel **nur** über Zone D erreichbar, Hunde-Hüpfer
-  kleiner als eine Stufe. Ändert jemand die Tuning-Werte, schlägt der Test an.
+  kleiner als eine Stufe, **Kopffreiheit unter jedem Sims**. Ändert jemand die
+  Tuning-Werte, schlägt der Test an.
 
 ### 7. Deployment
 

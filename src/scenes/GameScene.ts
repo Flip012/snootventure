@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/GameConfig';
-import { GOAL, TEST_LEVEL, TEST_ZONES } from '../config/testLevel';
+import { GOAL, TEST_LEVEL, TEST_ZONES, type PropKind } from '../config/testLevel';
+import { spotInterest, type SniffSpot } from '../core/dogBrain';
 import { PlayerInput } from '../core/input';
 import { zoneAllowsSwitch } from '../core/layerMath';
 import { LayerManager } from '../core/LayerManager';
@@ -29,6 +30,11 @@ export class GameScene extends Phaser.Scene {
   private goal!: Phaser.GameObjects.Image;
   private hud!: Phaser.GameObjects.Text;
   private goalReached = false;
+  /** Schnüffelstellen je Ebene, aus dem Bewuchs abgeleitet. */
+  private readonly spotsByLayer: SniffSpot[][] = [];
+  /** Wie lange der Mensch schon keine Laufeingabe gemacht hat. */
+  private playerIdleMs = 0;
+  private playerFacing: -1 | 1 = 1;
 
   constructor() {
     super('Game');
@@ -47,11 +53,34 @@ export class GameScene extends Phaser.Scene {
       y: worldHeight - 48,
     });
 
+    const propTexture: Record<PropKind, string> = {
+      bush: 'propBush',
+      shrub: 'propShrub',
+      grass: 'propGrass',
+      weed: 'propWeed',
+      post: 'propPost',
+    };
+
     for (const layerDef of TEST_LEVEL) {
       const layer = this.layerManager.createLayer();
       for (const p of layerDef.platforms) {
         layer.addPlatform(this, p.x, p.y, p.width, p.height);
       }
+      // Bewuchs + die daraus abgeleiteten Schnüffelstellen des Hundes.
+      const spots: SniffSpot[] = [];
+      for (const prop of layerDef.props) {
+        layer.addProp(this, propTexture[prop.kind], prop.x, prop.y);
+        if (prop.appeal > 0) {
+          spots.push({
+            x: prop.x,
+            // Der Hund schnüffelt am Fuß der Pflanze, nicht an der Krone.
+            y: prop.y - GAME_CONFIG.dog.height / 2,
+            appeal: prop.appeal,
+            markable: prop.markable,
+          });
+        }
+      }
+      this.spotsByLayer.push(spots);
     }
 
     // Zonen-Marker auf jeder Ebene rendern, die die Zone verbindet — das
@@ -125,7 +154,24 @@ export class GameScene extends Phaser.Scene {
 
     if (!transitioning) {
       this.player.update(time, delta, input, force.player);
-      this.dog.update(delta, this.player.carrier.x, force.dog, force.taut, force.distance);
+      // Stillstand des Menschen mitzählen — Auslöser dafür, dass sich der
+      // Hund hinsetzt, und Schalter für das Vorweg-Traben.
+      this.playerIdleMs = input.move === 0 ? this.playerIdleMs + delta : 0;
+      if (input.move !== 0) this.playerFacing = input.move;
+
+      this.dog.update(
+        delta,
+        {
+          x: this.player.carrier.x,
+          y: this.player.carrier.y,
+          facing: this.playerFacing,
+          idleMs: this.playerIdleMs,
+        },
+        force.dog,
+        force.taut,
+        force.distance,
+        this.spotsByLayer[this.dog.layerIndex] ?? [],
+      );
       if (input.layerUpJustPressed) this.tryLayerSwitch(1);
       else if (input.layerDownJustPressed) this.tryLayerSwitch(-1);
       this.respawnIfFallen();
@@ -151,6 +197,7 @@ export class GameScene extends Phaser.Scene {
       leashDistance: force.distance,
       leashTaut: force.taut,
       inZone: this.isInAnyZone(),
+      spotInterest: this.currentSpotInterest(),
     });
   }
 
@@ -216,6 +263,16 @@ export class GameScene extends Phaser.Scene {
     if (db.bottom >= GAME_CONFIG.worldHeight - 1) {
       db.reset(this.player.carrier.x + GAME_CONFIG.dog.spawnOffsetX, this.player.carrier.y);
     }
+  }
+
+  /** Interesse des Hundes an seiner Zielstelle — nur fürs Debug-Overlay. */
+  private currentSpotInterest(): number {
+    const brain = this.dog.brain;
+    if (brain.mood !== 'spot' || brain.targetSpot < 0) return 0;
+    const spot = this.spotsByLayer[this.dog.layerIndex]?.[brain.targetSpot];
+    if (!spot) return 0;
+    const d = Math.hypot(spot.x - this.dog.carrier.x, spot.y - this.dog.carrier.y);
+    return spot.appeal * spotInterest(d, GAME_CONFIG.dog.brain.spotInterestRadius);
   }
 
   private isInAnyZone(): boolean {

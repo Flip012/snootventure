@@ -28,10 +28,66 @@ export interface LampDef {
   readonly swing?: SwingDef;
 }
 
+/**
+ * Bewuchs und Stadtmobiliar am Boden. Fast alles davon ist für den Hund eine
+ * Schnüffel- oder Pinkelstelle (`appeal` > 0) — Grasbüschel reizen mäßig,
+ * Büsche und Laternenpfähle deutlich mehr.
+ */
+export type PropKind = 'bush' | 'shrub' | 'grass' | 'post' | 'weed';
+
+export interface PropDef {
+  readonly kind: PropKind;
+  /** Fußpunkt in kanonischen Koordinaten (Unterkante). */
+  readonly x: number;
+  readonly y: number;
+  /** Attraktivität für den Hund, 0 = uninteressant. */
+  readonly appeal: number;
+  /** Hier hebt der Hund auch mal das Bein. */
+  readonly markable: boolean;
+}
+
 export interface LayerDef {
   readonly platforms: readonly PlatformDef[];
   readonly lamps: readonly LampDef[];
+  readonly props: readonly PropDef[];
 }
+
+/** Kompakte Helfer, damit die Level-Daten lesbar bleiben. */
+const bush = (x: number, y = 672): PropDef => ({
+  kind: 'bush',
+  x,
+  y,
+  appeal: 1,
+  markable: true,
+});
+const shrub = (x: number, y = 672): PropDef => ({
+  kind: 'shrub',
+  x,
+  y,
+  appeal: 0.8,
+  markable: true,
+});
+const post = (x: number, y = 672): PropDef => ({
+  kind: 'post',
+  x,
+  y,
+  appeal: 0.95,
+  markable: true,
+});
+const grass = (x: number, y = 672): PropDef => ({
+  kind: 'grass',
+  x,
+  y,
+  appeal: 0.45,
+  markable: false,
+});
+const weed = (x: number, y = 672): PropDef => ({
+  kind: 'weed',
+  x,
+  y,
+  appeal: 0.55,
+  markable: false,
+});
 
 const GROUND_Y = 672;
 const GROUND_H = 48;
@@ -86,6 +142,23 @@ export const TEST_LEVEL: readonly LayerDef[] = [
         swing: { amplitudeRad: 0.5, periodMs: 3600, phaseRad: 1.3 },
       },
     ],
+    // Bewuchs am Wegesrand — Hundeziele auf der Startebene
+    props: [
+      grass(70),
+      bush(180),
+      weed(330),
+      shrub(600),
+      post(760),
+      grass(950),
+      bush(1090),
+      weed(1160),
+      grass(1380),
+      shrub(1520),
+      post(1690),
+      // Auf Plattformen: kleine Grasbüschel als Deko/Ziel
+      grass(410, 605),
+      weed(740, 538),
+    ],
   },
   // Ebene 1 (Mitte) — Bodenlücke bei x 1000–1300; trägt rechts oben das Ziel,
   // das von hier aus bewusst NICHT erreichbar ist (siehe Kommentar oben).
@@ -113,6 +186,23 @@ export const TEST_LEVEL: readonly LayerDef[] = [
       },
       // Beleuchtet die Zielplattform
       { x: 2300, y: 250, length: 120, radius: 320 },
+    ],
+    props: [
+      shrub(120),
+      grass(300),
+      bush(470),
+      post(680),
+      weed(860),
+      grass(930),
+      // rechts der Bodenlücke
+      bush(1390),
+      grass(1560),
+      shrub(1730),
+      post(1900),
+      weed(2050),
+      grass(2160),
+      // auf der Zielplattform
+      bush(2340, 471),
     ],
   },
   // Ebene 2 (hinten) — trägt die einzige Aufstiegs-Treppe zum Ziel (ab x 1900)
@@ -143,6 +233,23 @@ export const TEST_LEVEL: readonly LayerDef[] = [
       { x: 1305, y: 340, length: 120, radius: 300 },
       // Beleuchtet die Treppe und Zone D
       { x: 2120, y: 300, length: 130, radius: 330 },
+    ],
+    props: [
+      bush(90),
+      grass(240),
+      shrub(520),
+      weed(700),
+      post(980),
+      grass(1150),
+      // rechts der Lücke
+      shrub(1420),
+      bush(1620),
+      grass(1800),
+      weed(2000),
+      // auf den Treppenstufen
+      grass(1980, 605),
+      weed(2150, 538),
+      bush(2330, 471),
     ],
   },
 ];

@@ -43,11 +43,25 @@ Start links auf Ebene 1, Ziel oben rechts auf Ebene 2. Der Weg führt zwingend
 
 ## Mensch und Hund
 
-Der Hund hängt an einer Leine (Federphysik) und hat einen eigenen Kopf: Er
-folgt, bleibt aber zwischendurch zum Schnüffeln stehen oder trottet eigenwillig
-los. Zieht er, wirst du mitgezogen — stemmst du dich dagegen, kommst du
-langsamer voran. Springen kann er wie ein echter Hund nur minimal; Treppen
-schafft er nicht allein, du musst ihn an der Leine hochziehen.
+Der Hund hängt an einer Leine (Federphysik) und hat einen eigenen Kopf. Zieht
+er, wirst du mitgezogen — stemmst du dich dagegen, kommst du langsamer voran.
+Springen kann er wie ein echter Hund nur minimal; Treppen schafft er nicht
+allein, du musst ihn an der Leine hochziehen.
+
+Was er von sich aus macht:
+
+- **Schnüffeln und markieren** an Büschen, Sträuchern, Grasbüscheln und
+  Pollern. Sein Interesse fällt **quadratisch mit dem Abstand** — gehst du
+  einfach weiter, gibt er die Stelle schnell auf und trabt mit. Frisch
+  besuchte Stellen sind eine Weile langweilig.
+- **Von selbst zurückkommen:** Je weiter er weg ist, desto wahrscheinlicher
+  besinnt er sich und läuft zu dir — die Leine reißt ihn nicht abrupt zurück.
+- **Vorweg traben**, wenn du zügig gehst.
+- **Schütteln**, **Hinsetzen** (wenn du länger stehen bleibst) und
+  gelegentliche **Zoomies** — kurze Übermuts-Sprints mit Hüpfern.
+
+Das Debug-Overlay (F1) zeigt seine aktuelle Laune und das Interesse an der
+angesteuerten Stelle.
 
 Space kürzer halten = niedrigerer Sprung. Coyote Time (~100 ms) und Jump
 Buffering (~120 ms) sind aktiv; Werte in `src/config/GameConfig.ts`.
