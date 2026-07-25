@@ -56,13 +56,20 @@ Danach deployt jeder Push automatisch (Workflow:
 `.github/workflows/deploy.yml`). Hinweis: `keep_files: true` lässt alte
 Build-Hashes im Branch-Ordner liegen — für den Prototyp unkritisch.
 
-## Grafik
+## Grafik — Noir-Look
 
-Alle Texturen werden zur Laufzeit generiert (farbcodierte Platzhalter, eine
-Farbstimmung pro Ebene → Tiefen-Lesbarkeit). Drop-in-Slot für echte Assets
+Komplett Schwarz-Weiß/Graustufen: dunkle Welt, Hängelampen (teils schwingend)
+stanzen Lichtkegel aus einer Dunkelheits-Maske, der Spieler ist eine schwarze
+Silhouette und wirft unter Lampen einen wandernden Schatten. Im Dunkeln sind
+**nur seine Augen sichtbar**. Tuning in `GameConfig.lighting`
+(`overlayAlpha`, `glowAlpha`, `depthDimming`, `shadowMaxAlpha`, …); Lampen
+sind Level-Daten in `src/config/testLevel.ts`.
+
+Alle Texturen werden zur Laufzeit generiert. Drop-in-Slot für echte Assets
 (z. B. [Kenney CC0](https://kenney.nl/assets)): in
 `src/scenes/BootScene.ts` die `generate*`-Aufrufe durch `this.load.image(...)`
-mit denselben Textur-Keys (`player`, `block`) ersetzen.
+mit denselben Textur-Keys (`player`, `block`, `eyes`, `light`, `shadow`)
+ersetzen.
 
 ## Architektur
 

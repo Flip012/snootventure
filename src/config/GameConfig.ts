@@ -37,17 +37,36 @@ export const GAME_CONFIG = {
     slideY: 60, // px, wie weit die Front-Ebene nach unten gleitet
     fadeTo: 0.06, // Ziel-Alpha der Front-Ebene
   },
-  // Farbstimmung pro Ebene (Index 0 = vorderste Ebene): [Plattform, Hintergrundakzent]
+  // Graustufen pro Ebene (Index 0 = vorderste Ebene) — Noir-Look, Tiefe
+  // liest sich über Helligkeit + Abdunkelung
   layerColors: [
-    { platform: 0xe2725b, accent: 0x8c3b2e }, // Ebene 0: warmes Terrakotta
-    { platform: 0x5ba8e2, accent: 0x2e5d8c }, // Ebene 1: kühles Blau
-    { platform: 0x7ee081, accent: 0x3d8c40 }, // Ebene 2: Grün
+    { platform: 0xdedede }, // Ebene 0: hellstes Grau
+    { platform: 0xaaaaaa }, // Ebene 1: mittleres Grau
+    { platform: 0x7e7e7e }, // Ebene 2: dunkles Grau
   ],
 
-  // --- Player ---
+  // --- Licht & Dunkelheit ---
+  lighting: {
+    overlayAlpha: 0.94, // Grunddunkelheit (1 = pechschwarz)
+    overlayMargin: 0.12, // Überstand der Dunkelheits-Maske (deckt Kamera-Zoom-Puls)
+    // Interne Auflösung der Masken-Textur (0.5 = halbe Kantenlänge, 4x weniger
+    // Fillrate — weiches Licht verzeiht das, wichtig für Mobile/SwiftShader)
+    maskResolution: 0.5,
+    glowAlpha: 0.18, // Leuchtkorona um die Lampe
+    glowScale: 0.32, // Korona-Größe relativ zum Lichtradius
+    // Lampen fernerer Ebenen stanzen schwächer: Faktor = 1 - depthDimming * (1 - Scale)
+    depthDimming: 4,
+    shadowMaxAlpha: 0.65, // maximale Deckkraft des Spieler-Schattens
+    shadowBaseWidth: 46, // Schattenbreite (px) direkt unter der Lampe
+    shadowHeight: 12, // Schatten-Ellipsenhöhe (px)
+    ropeColor: 0x4a4a4a,
+    bulbColor: 0xf2f2f2,
+  },
+
+  // --- Player (schwarze Silhouette, im Dunkeln nur Augen sichtbar) ---
   playerWidth: 28,
   playerHeight: 40,
-  playerColor: 0xf5e663,
+  playerColor: 0x0d0d0d,
   // Respawn-Punkt, wenn der Player durchfällt (Ebene ohne Plattform)
   spawn: { x: 120, y: 600 },
 

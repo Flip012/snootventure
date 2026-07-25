@@ -4,6 +4,7 @@ import { TEST_LEVEL, TEST_ZONES } from '../config/testLevel';
 import { PlayerInput } from '../core/input';
 import { zoneAllowsSwitch } from '../core/layerMath';
 import { LayerManager } from '../core/LayerManager';
+import { LightingSystem } from '../core/LightingSystem';
 import { Player } from '../entities/Player';
 
 /**
@@ -16,6 +17,7 @@ export class GameScene extends Phaser.Scene {
   private player!: Player;
   private playerInput!: PlayerInput;
   private layerManager!: LayerManager;
+  private lighting!: LightingSystem;
   private hud!: Phaser.GameObjects.Text;
 
   constructor() {
@@ -26,7 +28,7 @@ export class GameScene extends Phaser.Scene {
     const { worldWidth, worldHeight } = GAME_CONFIG;
     this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
-    this.cameras.main.setBackgroundColor(0x181c26);
+    this.cameras.main.setBackgroundColor(0x1c1c1c);
 
     // Pivot: Skalierung zentriert auf die Boden-Mitte, damit die hinteren
     // Ebenen "auf dem Boden stehend" nach hinten rücken.
@@ -53,6 +55,14 @@ export class GameScene extends Phaser.Scene {
     const startLayer = this.layerManager.layers[0];
     if (startLayer) this.player.attachToLayer(startLayer);
 
+    // Lampen NACH dem Player anlegen, damit sie im Container über ihm hängen.
+    this.lighting = new LightingSystem(this);
+    TEST_LEVEL.forEach((layerDef, i) => {
+      const layer = this.layerManager.layers[i];
+      if (!layer) return;
+      for (const lamp of layerDef.lamps) this.lighting.addLamp(layer, lamp);
+    });
+
     this.layerManager.applyPresentation(this.layerManager.activeIndex);
 
     this.playerInput = new PlayerInput(this);
@@ -64,10 +74,10 @@ export class GameScene extends Phaser.Scene {
       .text(16, 16, '', {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '14px',
-        color: '#9aa4b5',
+        color: '#c9c9c9',
       })
       .setScrollFactor(0)
-      .setDepth(100);
+      .setDepth(300);
   }
 
   override update(time: number, delta: number): void {
@@ -81,6 +91,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.player.syncDisplay();
+    this.lighting.update(time, this.cameras.main, this.player, this.layerManager.isTransitioning);
 
     this.hud.setText(
       `Ebene ${this.layerManager.activeIndex + 1}/${this.layerManager.layers.length}` +

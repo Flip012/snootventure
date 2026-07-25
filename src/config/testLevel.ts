@@ -1,4 +1,5 @@
 import type { SwitchZoneDef } from '../core/layerMath';
+import type { SwingDef } from '../core/lightMath';
 
 /**
  * Testlevel-Daten in kanonischen Weltkoordinaten (Welt 2400x720, Boden-
@@ -14,8 +15,19 @@ export interface PlatformDef {
   readonly height?: number;
 }
 
+/** Hängelampe: Aufhängung (x,y) + Seillänge; optional schwingend. */
+export interface LampDef {
+  readonly x: number;
+  readonly y: number;
+  readonly length: number;
+  /** Lichtradius in kanonischen px. */
+  readonly radius: number;
+  readonly swing?: SwingDef;
+}
+
 export interface LayerDef {
   readonly platforms: readonly PlatformDef[];
+  readonly lamps: readonly LampDef[];
 }
 
 const GROUND_Y = 672;
@@ -33,6 +45,22 @@ export const TEST_LEVEL: readonly LayerDef[] = [
       { x: 1660, y: 500, width: 160 },
       { x: 1980, y: 360, width: 224 },
     ],
+    lamps: [
+      // Über Zone A — schwingt langsam, Schatten sweept durch die Zone
+      { x: 278, y: 340, length: 130, radius: 320, swing: { amplitudeRad: 0.38, periodMs: 3000 } },
+      // Über Zone B — statisch
+      { x: 888, y: 330, length: 145, radius: 340 },
+      // Mittelbereich — schwingt weiter aus, mit Phasenversatz
+      {
+        x: 1450,
+        y: 330,
+        length: 135,
+        radius: 320,
+        swing: { amplitudeRad: 0.5, periodMs: 3600, phaseRad: 1.3 },
+      },
+      // Endbereich — statisch
+      { x: 2080, y: 350, length: 115, radius: 300 },
+    ],
   },
   // Ebene 1 (Mitte, Blau) — Boden mit Lücke bei x 1000–1300
   {
@@ -46,6 +74,18 @@ export const TEST_LEVEL: readonly LayerDef[] = [
       { x: 1800, y: 380, width: 160 },
       { x: 2100, y: 300, width: 160 },
     ],
+    lamps: [
+      { x: 560, y: 340, length: 130, radius: 310 },
+      // Über der Bodenlücke + Fall-Zone — schwingt schnell und weit
+      {
+        x: 1128,
+        y: 310,
+        length: 155,
+        radius: 340,
+        swing: { amplitudeRad: 0.55, periodMs: 2600, phaseRad: 0.7 },
+      },
+      { x: 1850, y: 340, length: 120, radius: 300 },
+    ],
   },
   // Ebene 2 (hinten, Grün)
   {
@@ -56,6 +96,16 @@ export const TEST_LEVEL: readonly LayerDef[] = [
       { x: 1120, y: 300, width: 160 },
       { x: 1500, y: 420, width: 224 },
       { x: 1900, y: 260, width: 192 },
+    ],
+    lamps: [
+      {
+        x: 900,
+        y: 320,
+        length: 140,
+        radius: 330,
+        swing: { amplitudeRad: 0.3, periodMs: 4200, phaseRad: 2.1 },
+      },
+      { x: 1550, y: 330, length: 125, radius: 310 },
     ],
   },
 ];

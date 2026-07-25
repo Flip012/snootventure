@@ -55,7 +55,31 @@ Transforms von Phaser-Containern. Deshalb:
 - Sprungtaste ist **nur Space** — W/S und ↑/↓ sind für den Ebenenwechsel (M3)
   reserviert.
 
-### 4. Deployment
+### 4. Noir-Look + Licht/Schatten (LightingSystem)
+
+- Komplett Graustufen: Palette in `layerColors`, Player = schwarze Silhouette;
+  die **Augen sind ein eigenes Overlay-Sprite über der Dunkelheits-Maske** —
+  im Dunkeln bleiben nur sie sichtbar.
+- Dunkelheit = bildschirmfüllende `RenderTexture` (scrollFactor 0), pro Frame:
+  `clear()` → `fill(schwarz, overlayAlpha)` → pro Lampe radialen Gradient
+  per ERASE ausstanzen. **Phaser-4-Falle:** Zeichenbefehle sind gepuffert und
+  laufen erst bei explizitem `rt.render()`.
+- Maske läuft intern mit `maskResolution` (0.5 = 4x weniger Fillrate,
+  hochskaliert) — wichtig für Mobile/Software-Rendering.
+- Lampen sind Level-Daten (`testLevel.ts`): Aufhängung + Seillänge + Radius,
+  optional `swing` (Pendel). Schwingen = Rotation eines Sub-Containers an der
+  Aufhängung; Lichtposition aus purer Pendel-Mathe (`lightMath.ts`).
+- Lampen kleben an ihrer Ebene: Position/Größe/Stärke folgen dem
+  Container-Transform; fernere Ebenen leuchten schwächer (`depthDimming`),
+  die ausgeblendete Front-Ebene gar nicht (Container-Alpha).
+- Spieler-Schatten: pro Lampe der aktuellen Ebene eine weiche Ellipse an den
+  Füßen, wandert von der Lampe weg und streckt sich (`shadowFrom`) — bei
+  schwingenden Lampen entsteht der Schatten-Sweep. Pausiert während der
+  Transition.
+- Depth-Schichten: Ebenen-Container (-2..2) < Schatten (5) < Maske (150)
+  < Lampen-Koronen (160) < Augen (210) < HUD (300).
+
+### 5. Deployment
 
 - GitHub Pages pro Branch: `gh-pages/<branch>/`, Vite-`base` wird im CI aus
   `github.ref_name` gesetzt (`VITE_BASE`). Branchnamen mit Slashes ergeben
